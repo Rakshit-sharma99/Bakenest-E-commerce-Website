@@ -1,0 +1,254 @@
+/* ═══════════════════════════════════════════
+   HERO SECTION — BakeHaus  (bg-image version)
+   ═══════════════════════════════════════════ */
+
+/* ── Container ── */
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+
+  /* Full-page background image */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+/* ── Left-side reading scrim ──
+   Keeps the left text area comfortably legible
+   without obscuring the image on the right.      */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  /* Fades from a warm semi-opaque tone on the left to fully transparent at ~55% */
+  background: linear-gradient(
+    to right,
+    rgba(245, 228, 200, 0.55) 0%,
+    rgba(245, 228, 200, 0.30) 35%,
+    transparent 58%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Layout ── */
+.heroInner {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  max-width: 1440px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 80px;
+}
+
+/* ── Left Text Column ── */
+.heroLeft {
+  width: 46%;
+  flex-shrink: 0;
+  padding: 110px 0 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ── Eyebrow ── */
+.heroEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #3D2B1A;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.1s forwards;
+}
+
+.star {
+  color: #C9956A;
+  font-size: 11px;
+}
+
+/* ── Main Heading ── */
+.heroHeading {
+  font-family: var(--font-heading);
+  font-size: clamp(52px, 5.8vw, 88px);
+  font-weight: 800;
+  color: #241609;
+  line-height: 0.90;
+  letter-spacing: 1px;
+  margin-bottom: 18px;
+  opacity: 0;
+  animation: fadeUp 0.7s ease 0.2s forwards;
+}
+
+/* ── Script / Italic Subheading ── */
+.heroScript {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-script);
+  font-size: clamp(26px, 2.8vw, 40px);
+  color: #4A3728;
+  margin-bottom: 26px;
+  opacity: 0;
+  animation: fadeUp 0.7s ease 0.35s forwards;
+}
+
+/* ── Body Copy ── */
+.heroPara {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+  color: #5A3E28;
+  max-width: 360px;
+  margin-bottom: 38px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.5s forwards;
+}
+
+/* ── CTA Button ── */
+.heroCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(175deg, #d9924b 0%, #c07828 100%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 15px 38px;
+  border-radius: 50px;
+  text-decoration: none;
+  box-shadow:
+    0 4px 18px rgba(175, 95, 20, 0.40),
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.28);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.6s forwards;
+}
+
+.heroCta:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 32px rgba(175, 95, 20, 0.50),
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.32);
+}
+
+.ctaArrow {
+  font-size: 20px;
+  line-height: 1;
+  margin-top: -1px;
+}
+
+/* ── Feature Checklist ── */
+.heroFeatures {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.75s forwards;
+}
+
+.heroFeatures li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: #3D2B1A;
+}
+
+.checkIcon {
+  flex-shrink: 0;
+}
+
+/* ── Bottom Wave Divider ── */
+.heroWave {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.heroWave svg {
+  width: 100%;
+  height: 70px;
+  display: block;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1280px) {
+  .heroInner { padding: 0 48px; }
+}
+
+@media (max-width: 1023px) {
+  .hero {
+    /* On tablet/mobile centre the image */
+    background-position: 60% center;
+  }
+  .heroInner {
+    min-height: 100vh;
+    min-height: 100dvh;
+    align-items: flex-end;
+    padding: 0 28px;
+  }
+  .heroLeft {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+    padding: 100px 0 80px;
+  }
+  .heroScrim {
+    background: linear-gradient(
+      to top,
+      rgba(245, 228, 200, 0.72) 0%,
+      rgba(245, 228, 200, 0.40) 55%,
+      transparent 80%
+    );
+  }
+  .heroEyebrow { justify-content: center; }
+  .heroScript  { justify-content: center; }
+  .heroPara    { text-align: center; margin-inline: auto; }
+  .heroFeatures { justify-content: center; }
+}
+
+@media (max-width: 768px) {
+  .hero { background-position: 70% center; }
+  .heroHeading { font-size: 50px; }
+  .heroScript  { font-size: 26px; }
+  .heroFeatures { gap: 14px; }
+}
+
+@media (max-width: 480px) {
+  .heroInner  { padding: 0 16px; }
+  .heroLeft   { padding: 90px 0 70px; }
+  .heroHeading { font-size: 42px; }
+  .heroScript  { font-size: 22px; }
+  .heroPara    { font-size: 14px; }
+  .heroCta     { padding: 14px 30px; font-size: 14.5px; }
+}

@@ -1,0 +1,42 @@
+.curved-loop-jacket {
+  padding: 40px 0; /* Changed from 100vh to fit nicely between sections */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+  background: transparent;
+}
+
+.curved-loop-svg {
+  user-select: none;
+  width: 100%;
+  aspect-ratio: 1440 / 240;
+  overflow: visible;
+  display: block;
+  font-size: 3.5rem; /* Resized to fit the standard site branding */
+  fill: #8B4513; /* Deep warm brown perfectly aligned with BakeHaus typography */
+  font-family: var(--font-heading, "Playfair Display", serif);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  transition: fill 0.3s ease;
+  filter: drop-shadow(0 4px 12px rgba(139, 69, 19, 0.1));
+}
+
+@media (max-width: 900px) {
+  .curved-loop-svg {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .curved-loop-svg {
+    font-size: 1.8rem;
+  }
+}

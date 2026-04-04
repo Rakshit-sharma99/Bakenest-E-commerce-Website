@@ -1,0 +1,119 @@
+.card {
+  background: var(--color-white);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px var(--color-shadow-medium);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-bounce);
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card.rotateLeft {
+  transform: rotate(-2deg);
+}
+
+.card.rotateRight {
+  transform: rotate(2deg);
+}
+
+.card.rotateNone {
+  transform: rotate(0deg);
+}
+
+.card:hover {
+  transform: scale(1.05) rotate(-0.5deg) !important;
+  box-shadow: 0 16px 40px var(--color-shadow-heavy);
+}
+
+.card:active {
+  transform: scale(1.02) rotate(-0.3deg) !important;
+  transition-duration: 0.1s;
+}
+
+.cardFadeIn {
+  opacity: 0;
+  transform: translateY(40px) rotate(var(--card-rotate, 0deg));
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.cardVisible {
+  opacity: 1;
+  transform: translateY(0) rotate(var(--card-rotate, 0deg));
+}
+
+.cardImageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: #f5f0e8;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.card:hover .cardImage {
+  transform: scale(1.08);
+}
+
+.cardImageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(74, 55, 40, 0.04) 100%);
+  pointer-events: none;
+}
+
+.cardContent {
+  padding: var(--space-md) var(--space-md) var(--space-lg);
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-brown);
+  margin-bottom: var(--space-xs);
+}
+
+.cardDescription {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.cardDivider {
+  width: 32px;
+  height: 2px;
+  background-color: var(--color-accent-tan);
+  margin-bottom: var(--space-xs);
+  border-radius: 1px;
+  transition: width var(--transition-default);
+}
+
+.card:hover .cardDivider {
+  width: 48px;
+}
+
+@media (max-width: 768px) {
+  .card {
+    transform: rotate(0deg) !important;
+  }
+
+  .card:hover {
+    transform: scale(1.02) !important;
+  }
+
+  .cardTitle {
+    font-size: 16px;
+  }
+
+  .cardDescription {
+    font-size: 12px;
+  }
+}

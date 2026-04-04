@@ -1,0 +1,351 @@
+/* ═══════════════════════════════════════════
+   PROFILE PAGE (Ultra Glassmorphism)
+   ═══════════════════════════════════════════ */
+
+.profileContainer {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  font-family: var(--font-body);
+}
+
+.profileOverlay {
+  position: absolute;
+  inset: 0;
+  /* Very subtle warm overlay to match the auth page style, but mostly relying on the bg image */
+  background: rgba(220, 150, 100, 0.05);
+  pointer-events: none;
+}
+
+.profileWrapper {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: 24px;
+  max-width: 1100px;
+  width: 100%;
+  padding: 40px;
+  align-items: stretch;
+}
+
+/* ── Common Glass Effect ── */
+.profileSidebarBox,
+.profileMainBox {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 28px;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.profileSidebarInner,
+.profileMainInner {
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* ── Sidebar ── */
+.profileSidebarBox {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.profileSidebarInner {
+  padding: 40px 24px 30px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Avatar Glow ── */
+.profileAvatarArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.avatarGlowWrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 20px;
+}
+
+.avatarGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(235, 172, 102, 0.6) 0%, rgba(235, 172, 102, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.avatarCircle {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #d38144 0%, #b86b36 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 36px;
+  box-shadow: 
+    0 10px 20px rgba(184, 107, 54, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.profileName {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 600;
+  color: #3b2c22;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.profileJoined {
+  font-size: 13px;
+  color: #6a5342;
+  font-weight: 500;
+}
+
+/* Sidebar Nav ── */
+.profileNavList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.profileNavItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: #553e2e;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navIcon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a8724e;
+}
+.navIcon.pin { color: #d66464; }
+.navIcon.box { color: #b57a55; }
+.navIcon.square { color: #bf8141; }
+
+.profileNavItem.active {
+  background: linear-gradient(90deg, #bb723b 0%, #a25c27 100%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(162, 92, 39, 0.4);
+}
+
+.profileNavItem.active .navIcon {
+  color: #fff;
+}
+
+.profileSideBack {
+  margin-top: auto;
+  align-self: center;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: #6a5342;
+  cursor: pointer;
+  padding: 10px;
+  margin-bottom: -10px;
+}
+
+/* ── Main Panel ── */
+.profileMainBox {
+  flex: 1;
+}
+
+.profileMainInner {
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Pill Nav ── */
+.profileTopPillNav {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 40px;
+  padding: 4px;
+  width: fit-content;
+  margin: 0 auto 50px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.profileTopPillNav button {
+  background: transparent;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 30px;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #553e2e;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profileTopPillNav button.active {
+  background: linear-gradient(135deg, #cc7f45 0%, #a25c27 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(162, 92, 39, 0.3);
+  font-weight: 600;
+}
+
+/* Main Content ── */
+.profileContentFade {
+  animation: fadeIn 0.4s ease;
+  max-width: 500px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profileSecTitle {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 600;
+  color: #4a3424;
+  margin-bottom: 8px;
+}
+
+.profileSecDesc {
+  font-size: 14.5px;
+  color: #6a5342;
+  margin-bottom: 30px;
+}
+
+/* Glass Forms ── */
+.profileGlassForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.glassInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.glassInputIcon {
+  position: absolute;
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.glassInputIcon.iconUser { color: #a2653c; }
+
+.glassInput {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 16px 20px 16px 50px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: #3b2c22;
+  outline: none;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.glassInput:focus {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: #fff;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.8),
+    0 4px 15px rgba(204, 127, 69, 0.15);
+}
+
+.glassSaveBtn {
+  margin-top: 10px;
+  align-self: flex-start;
+  background: linear-gradient(135deg, #cc7f45 0%, #aa612a 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 14px 34px;
+  border-radius: 30px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(170, 97, 42, 0.3);
+  transition: all 0.3s ease;
+}
+
+.glassSaveBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(170, 97, 42, 0.4);
+}
+
+/* ── Responsive ── */
+@media (max-width: 850px) {
+  .profileWrapper {
+    flex-direction: column;
+    padding: 20px;
+  }
+  .profileSidebarBox {
+    width: 100%;
+  }
+  .profileTopPillNav {
+    margin: 0 auto 30px;
+  }
+  .profileContentFade {
+    max-width: 100%;
+  }
+}
