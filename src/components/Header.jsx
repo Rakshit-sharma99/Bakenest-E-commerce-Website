@@ -3,7 +3,7 @@ import './Header.css';
 
 const NAV_ITEMS = ['Home', 'Shop', 'Categories', 'About'];
 
-export default function Header({ user, onAuthOpen, onSearchClick, onNavClick }) {
+export default function Header({ user, onAuthOpen, onSearchClick, onNavClick, onCartClick }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleClick = (e, item) => {
@@ -26,7 +26,7 @@ export default function Header({ user, onAuthOpen, onSearchClick, onNavClick }) 
         </nav>
 
         <a href="/" className="logo" onClick={(e) => handleClick(e, 'Home')}>
-          BAKEHAUS
+          BAKENESS 
           <span className="logoAccent">EST. 2026</span>
         </a>
 
@@ -44,7 +44,7 @@ export default function Header({ user, onAuthOpen, onSearchClick, onNavClick }) 
             {user && <span className="presenceIndicator" />}
           </button>
 
-          <button className="iconButton" aria-label="Cart">
+          <button className="iconButton" aria-label="Cart" onClick={onCartClick}>
             <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
           </button>
 

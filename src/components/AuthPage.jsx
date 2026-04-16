@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import bgImage from '../assets/images/abcdefg.png';
 import './AuthPage.css';
+import { api, authStore } from '../services/api';
+import { GoogleLogin } from '@react-oauth/google';
 
 /* ── tiny icon helpers ── */
 const IconEmail = () => (
@@ -69,14 +71,45 @@ export default function AuthPage({ onClose, onAuthSuccess }) {
   const [mode, setMode] = useState('login');
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate login success
-    onAuthSuccess({
-      name: form.name || form.email.split('@')[0],
-      email: form.email,
-    });
+    setError('');
+    setLoading(true);
+
+    try {
+      const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
+      const payload = await api.request(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(form),
+      });
+
+      authStore.saveSession(payload);
+      onAuthSuccess(payload.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      setError('');
+      const payload = await api.request('/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+      authStore.saveSession(payload);
+      onAuthSuccess(payload.user);
+    } catch (err) {
+      setError(err.message || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -103,10 +136,29 @@ export default function AuthPage({ onClose, onAuthSuccess }) {
             <InputField label="Email" type="email" icon={IconEmail} value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
             <InputField label="Password" icon={IconLock} value={form.password} onChange={e => setForm({...form, password: e.target.value})} showToggle showPw={showPw} onToggle={() => setShowPw(!showPw)} />
 
-            <button type="submit" className="authSubmit">
-              {mode === 'login' ? 'Log In' : 'Create Account'}
+            {error && <div className="authError" role="alert">{error}</div>}
+
+            <button type="submit" className="authSubmit" disabled={loading}>
+              {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
             </button>
           </form>
+
+          <div className="authDivider">
+            <span /> <em>OR</em> <span />
+          </div>
+
+          <div className="authSocial">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google login failed')}
+              useOneTap
+              theme="outline"
+              size="large"
+              shape="pill"
+              logo_alignment="center"
+              text="continue_with"
+            />
+          </div>
         </div>
       </div>
     </div>

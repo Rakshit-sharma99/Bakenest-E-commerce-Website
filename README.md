@@ -1,16 +1,113 @@
-# React + Vite
+# BakeNest E-commerce (Storefront + Secure Admin Dashboard)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project now includes a complete full-stack admin management system for a bakery e-commerce website:
 
-Currently, two official plugins are available:
+- React storefront and admin UI
+- Node.js + Express API
+- MongoDB models for users, products, orders, coupons
+- Admin-only protected routes with JWT + role-based access control
+- Image upload support for product media
+- Real-time dashboard/storefront refresh using Socket.IO
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Key Features
 
-## React Compiler
+### Admin capabilities
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Product management: add, edit, delete, image upload, stock, and pricing
+- Discount/offer management: create coupons, enable/disable dynamically
+- Order management: view all orders, accept/reject, status transitions
+- User management: list users and delivery/contact details
+- Search/filter support for products and orders
 
-## Expanding the ESLint configuration
+### Security
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- JWT authentication
+- Admin-only access middleware for sensitive APIs
+- Rate limiting and `helmet` hardening
+
+### Real-time updates
+
+- Product/order/coupon updates emit Socket.IO events
+- Storefront and dashboard auto-refresh on relevant events
+
+## Project Structure
+
+- `src/` → React frontend + admin dashboard components
+- `backend/` → Express API, Mongo models/controllers/routes/middleware
+
+## Environment setup
+
+### Frontend (`.env`)
+
+Create `.env` in project root from `.env.example`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+### Backend (`backend/.env`)
+
+Create `backend/.env` from `backend/.env.example`:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/bakenest
+JWT_SECRET=replace-with-strong-random-secret
+JWT_EXPIRES_IN=1d
+CLIENT_URL=http://localhost:5173
+ADMIN_EMAIL=admin@bakenest.com
+ADMIN_PASSWORD=StrongAdmin@123
+```
+
+## Install dependencies
+
+From project root:
+
+```bash
+npm install
+```
+
+From backend folder:
+
+```bash
+cd backend
+npm install
+```
+
+## Run locally
+
+Terminal 1 (backend):
+
+```bash
+cd backend
+npm run dev
+```
+
+Terminal 2 (frontend):
+
+```bash
+npm run dev
+```
+
+## Seed admin user
+
+After backend env is configured:
+
+```bash
+cd backend
+npm run seed:admin
+```
+
+## Access URLs
+
+- Storefront: `http://localhost:5173`
+- Admin login: `http://localhost:5173/admin`
+- API health: `http://localhost:5000/api/health`
+
+## Production readiness notes
+
+- Replace default admin credentials and JWT secret
+- Set strict CORS `CLIENT_URL` values
+- Use a managed MongoDB cluster and secure networking
+- Prefer cloud object storage (S3/Cloudinary) over local file uploads for scale
+- Add CI with lint/build/test checks before deployment

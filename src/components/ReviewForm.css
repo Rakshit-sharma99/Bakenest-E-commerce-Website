@@ -1,0 +1,89 @@
+/* ReviewForm.css */
+.review-form-container {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.review-form-container h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #212121;
+}
+
+.review-form-container p {
+  color: #878787;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.review-login-prompt {
+  background: #f1f3f6;
+  padding: 20px;
+  border-radius: 4px;
+  text-align: center;
+  color: #212121;
+}
+
+.rating-input-group, .comment-input-group {
+  margin-bottom: 20px;
+}
+
+.rating-input-group label, .comment-input-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #212121;
+}
+
+.comment-input-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.comment-input-group textarea:focus {
+  outline: none;
+  border-color: #2874f0;
+}
+
+.submit-review-btn {
+  background: #fb641b; /* Flipkart orange */
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-review-btn:hover:not(:disabled) {
+  background: #f3580d;
+}
+
+.submit-review-btn:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+  color: #878787;
+}
+
+.review-error {
+  color: #d32f2f;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.review-success {
+  color: #388e3c;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}

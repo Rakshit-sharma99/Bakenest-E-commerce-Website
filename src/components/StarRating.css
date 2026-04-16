@@ -1,0 +1,52 @@
+/* StarRating.css */
+.star-rating-container {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star-rating-container .star {
+  color: #e4e5e9;
+  font-size: 24px;
+  line-height: 1;
+  position: relative;
+  display: inline-block;
+}
+
+.star-rating-container .star.filled {
+  color: #ffc107;
+}
+
+.star-rating-container .star.half-filled {
+  color: #e4e5e9;
+}
+
+.star-rating-container .star.half-filled::after {
+  content: '★';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #ffc107;
+}
+
+.star-rating-container.interactive .star {
+  cursor: pointer;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.star-rating-container.interactive .star:hover {
+  transform: scale(1.1);
+}
+
+.star-rating-container.small .star {
+  font-size: 16px;
+}
+
+.star-rating-container.medium .star {
+  font-size: 24px;
+}
+
+.star-rating-container.large .star {
+  font-size: 32px;
+}

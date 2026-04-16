@@ -1,0 +1,171 @@
+.cartOverlayBg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cartOverlayBox {
+  width: 400px;
+  max-width: 100%;
+  background: #fdfaf6;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.cartHeader {
+  padding: 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cartHeader h2 {
+  margin: 0;
+  color: #3b2a1a;
+}
+
+.closeCartBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #664c39;
+}
+
+.cartEmpty, .cartComplete {
+  padding: 40px 20px;
+  text-align: center;
+  color: #664c39;
+}
+
+.cartContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cartItems {
+  flex: 1;
+}
+
+.cartItem {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.cartItem img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.cartItemInfo h4 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+}
+.cartItemInfo p {
+  margin: 0 0 10px 0;
+  color: #c9824a;
+  font-weight: bold;
+}
+
+.cartItemActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cartItemActions button {
+  background: #f0e6dd;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cartItemActions .removeBtn {
+  background: none;
+  color: #d9534f;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: 'auto';
+}
+
+.cartSummary {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px dashed rgba(0,0,0,0.1);
+}
+.subtotalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: bold;
+  color: #3b2a1a;
+  margin-bottom: 20px;
+}
+
+.checkoutForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkoutForm h3 {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.checkoutForm input {
+  padding: 12px;
+  border: 1px solid #e0c9b8;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.formRow {
+  display: flex;
+  gap: 10px;
+}
+.formRow input {
+  flex: 1;
+}
+
+.checkoutBtn {
+  background: #c9824a;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.checkoutBtn:hover {
+  background: #b57442;
+}
+.checkoutBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

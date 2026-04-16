@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import CategoryCards from './components/CategoryCards';
@@ -9,16 +9,74 @@ import AuthPage from './components/AuthPage';
 import ProductsPage from './components/ProductsPage';
 import ProfilePage from './components/ProfilePage';
 import StaticPage from './components/StaticPage';
+import AdminLogin from './components/admin/AdminLogin';
+import AdminDashboard from './components/admin/AdminDashboard';
+import CartOverlay from './components/CartOverlay';
+import ProductDetailPage from './components/ProductDetailPage';
+import { authStore } from './services/api';
 
 export default function App() {
-  const [user, setUser] = useState(null); // { name, email }
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
+
+  return isAdminRoute ? <AdminApp /> : <StorefrontApp />;
+}
+
+function AdminApp() {
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
+  const storedUser = authStore.getUser();
+  const [adminUser, setAdminUser] = useState(storedUser?.role === 'admin' ? storedUser : null);
+
+  if (isAdminRoute) {
+    if (!adminUser) {
+      return <AdminLogin onSuccess={setAdminUser} />;
+    }
+
+    return <AdminDashboard adminUser={adminUser} onLogout={() => setAdminUser(null)} />;
+  }
+
+  return null;
+}
+
+function StorefrontApp() {
+
+  const [user, setUser] = useState(authStore.getUser()); // { name, email }
   const [authOpen, setAuthOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activeStaticPage, setActiveStaticPage] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+
   const [sourceSection, setSourceSection] = useState(null);
   const shopCatRef = useRef(null);
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find(item => (item._id || item.id) === (product._id || product.id));
+      if (existing) {
+        return prev.map(item => (item._id || item.id) === (product._id || product.id)
+          ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setCartOpen(true);
+  };
+
+  const removeFromCart = (product) => {
+    setCart(prev => prev.filter(item => (item._id || item.id) !== (product._id || product.id)));
+  };
+
+  const updateCartQuantity = (product, delta) => {
+    setCart(prev => prev.map(item => {
+      if ((item._id || item.id) === (product._id || product.id)) {
+        const newQ = item.quantity + delta;
+        return { ...item, quantity: Math.max(1, newQ) };
+      }
+      return item;
+    }));
+  };
 
   /* ── VIEW HANDLERS ── */
   
@@ -27,6 +85,7 @@ export default function App() {
     setActiveStaticPage(null);
     setShowProfile(false);
     setAuthOpen(false);
+    setSelectedProduct(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -34,11 +93,27 @@ export default function App() {
     setSourceSection(source);
     setActiveStaticPage(null);
     setShowProfile(false);
+    setSelectedProduct(null);
     setSelectedCategory(category);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleProductSelect = (product) => {
+    setSelectedCategory(null);
+    setActiveStaticPage(null);
+    setShowProfile(false);
+    setSelectedProduct(product);
+  };
+
   const handleBack = () => {
+    if (selectedProduct) {
+      setSelectedProduct(null);
+      return; 
+      // This will fall back to whichever state was active previously, 
+      // but depending on logic we might want to default to home or previous list
+      // For immediate simplicity: Back from PDP -> Products List or Home. 
+    }
+
     if (activeStaticPage || showProfile || selectedCategory) {
       const prevSource = sourceSection;
       setSelectedCategory(null);
@@ -57,6 +132,7 @@ export default function App() {
   };
 
   const handleNavClick = (item) => {
+    setSelectedProduct(null);
     if (item === 'Shop' || item === 'All Products') {
       handleCategorySelect({ id: 'all', label: 'All Products' }, 'hero');
     } else if (item === 'Categories') {
@@ -67,7 +143,6 @@ export default function App() {
     } else if (item === 'Home') {
       resetToHome();
     } else {
-      // Handle Privacy, Terms, Shipping, Returns, etc. via common handler
       setSelectedCategory(null);
       setShowProfile(false);
       setActiveStaticPage(item);
@@ -78,7 +153,7 @@ export default function App() {
   const handleAuthSuccess = (userData) => {
     setUser(userData);
     setAuthOpen(false);
-    setShowProfile(true);
+    if (!cartOpen) setShowProfile(true);
   };
 
   const handleUserIconClick = () => {
@@ -92,6 +167,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    authStore.clearSession();
     setUser(null);
     setShowProfile(false);
     resetToHome();
@@ -112,10 +188,29 @@ export default function App() {
       return <StaticPage type={activeStaticPage} onBack={handleBack} onNavClick={handleNavClick} />;
     }
 
+    if (selectedProduct) {
+      return (
+        <div style={{ paddingTop: '80px' }}>
+          <ProductDetailPage 
+            productId={selectedProduct._id || selectedProduct.id} 
+            initialProduct={selectedProduct}
+            onBack={handleBack}
+            user={user}
+            onProductClick={handleProductSelect}
+          />
+        </div>
+      );
+    }
+
     if (selectedCategory) {
       return (
         <div style={{ paddingTop: '80px' }}>
-          <ProductsPage category={selectedCategory} onBack={handleBack} />
+          <ProductsPage 
+            category={selectedCategory} 
+            onBack={handleBack} 
+            onAddToCart={addToCart} 
+            onProductClick={handleProductSelect}
+          />
         </div>
       );
     }
@@ -138,7 +233,6 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Header always present unless in full-screen Auth */}
       {!authOpen && (
         <Header 
           user={user}
@@ -148,12 +242,28 @@ export default function App() {
             setTimeout(() => shopCatRef.current?.focusSearch(), 200);
           }} 
           onNavClick={handleNavClick} 
+          onCartClick={() => setCartOpen(true)}
         />
       )}
 
       {renderContent()}
 
       {!authOpen && !showProfile && !activeStaticPage && <Footer onNavClick={handleNavClick} />}
+
+      {cartOpen && (
+        <CartOverlay
+          cart={cart}
+          onClose={(success) => {
+            setCartOpen(false);
+            if (success === true) setCart([]);
+          }}
+          onRemoveItem={removeFromCart}
+          onUpdateQuantity={updateCartQuantity}
+          user={user}
+          onAuthRequest={() => setAuthOpen(true)}
+        />
+      )}
     </div>
   );
 }
+

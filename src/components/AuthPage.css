@@ -139,8 +139,17 @@
 }
 
 .authTab.active {
-  background: linear-gradient(175deg, #d9924b 0%, #bf7520 100%);
+  transform: translateY(-2px);
   color: #fff;
+
+.authError {
+  background: rgba(176, 43, 43, 0.1);
+  color: #9c2f2f;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
   box-shadow: 0 3px 12px rgba(175, 95, 20, 0.35);
 }
 
@@ -394,8 +403,15 @@
 /* ── Social buttons ── */
 .authSocial {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
   margin-bottom: 22px;
+}
+.authSocial > div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .socialBtn {

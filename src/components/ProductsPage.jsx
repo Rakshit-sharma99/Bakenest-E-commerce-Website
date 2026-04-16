@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './ProductsPage.css';
 import { SHOP_CATEGORIES } from '../constants/categories';
+import { api } from '../services/api';
+import { getSocket } from '../services/socket';
 
 /* ── Mock product data per category ── */
 const MOCK_PRODUCTS = {
@@ -57,6 +59,25 @@ const MOCK_PRODUCTS = {
 // Flatten for "all"
 const ALL_FLATTENED = Object.values(MOCK_PRODUCTS).flat();
 
+const formatPrice = (value) => `₹${Number(value || 0).toFixed(2)}`;
+
+const getEffectivePrice = (product) => {
+  const basePrice = Number(product.price || 0);
+  const comparePrice = product.comparePrice ? Number(product.comparePrice) : null;
+  const discount = product.appliedDiscount;
+
+  if (!discount?.active || discount.type === 'none' || !discount.value) {
+    return { finalPrice: basePrice, originalPrice: comparePrice && comparePrice > basePrice ? comparePrice : null };
+  }
+
+  if (discount.type === 'flat') {
+    return { finalPrice: Math.max(basePrice - Number(discount.value), 0), originalPrice: basePrice };
+  }
+
+  const reduction = (basePrice * Number(discount.value)) / 100;
+  return { finalPrice: Math.max(basePrice - reduction, 0), originalPrice: basePrice };
+};
+
 /* ── Star rating component ── */
 const Stars = ({ rating }) => {
   const full = Math.floor(rating);
@@ -108,38 +129,70 @@ const SORT_OPTIONS = [
   { value: 'rating', label: 'Highest Rated' },
 ];
 
-export default function ProductsPage({ category, onBack }) {
+export default function ProductsPage({ category, onBack, onAddToCart, onProductClick }) {
   const [activeCatId, setActiveCatId] = useState(category.id);
   const [sort, setSort] = useState('popular');
   const [wishlist, setWishlist] = useState(new Set());
   const [cartAdded, setCartAdded] = useState(new Set());
   const [search, setSearch] = useState('');
+  const [liveProducts, setLiveProducts] = useState([]);
+
+  const loadProducts = async () => {
+    try {
+      const payload = await api.request('/products?limit=300&active=true');
+      setLiveProducts(payload.items || []);
+    } catch {
+      setLiveProducts([]);
+    }
+  };
 
   // Sync internal category state if prop changes
   useEffect(() => {
     setActiveCatId(category.id);
   }, [category.id]);
 
+  useEffect(() => {
+    loadProducts();
+
+    const socket = getSocket();
+    const syncProducts = () => loadProducts();
+
+    socket.on('products:changed', syncProducts);
+
+    return () => {
+      socket.off('products:changed', syncProducts);
+    };
+  }, []);
+
   const activeLabel = activeCatId === 'all' 
     ? 'All Products' 
     : (SHOP_CATEGORIES.find(c => c.id === activeCatId)?.label || category.label);
 
-  const rawProducts = activeCatId === 'all' ? ALL_FLATTENED : (MOCK_PRODUCTS[activeCatId] || []);
+  const liveFiltered =
+    activeCatId === 'all'
+      ? liveProducts
+      : liveProducts.filter((p) => p.category === activeCatId);
+
+  const rawProducts = liveFiltered.length
+    ? liveFiltered
+    : activeCatId === 'all'
+      ? ALL_FLATTENED
+      : (MOCK_PRODUCTS[activeCatId] || []);
 
   /* Filter */
   const filtered = rawProducts.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.desc.toLowerCase().includes(search.toLowerCase())
+    (p.desc || p.description || '').toLowerCase().includes(search.toLowerCase())
   );
 
   /* Sort */
   const sorted = [...filtered].sort((a, b) => {
-    const priceA = parseFloat(a.price.replace('$', ''));
-    const priceB = parseFloat(b.price.replace('$', ''));
+    const priceA = Number(typeof a.price === 'string' ? a.price.replace('₹', '') : a.price || 0);
+    const priceB = Number(typeof b.price === 'string' ? b.price.replace('₹', '') : b.price || 0);
     if (sort === 'price-asc') return priceA - priceB;
     if (sort === 'price-desc') return priceB - priceA;
-    if (sort === 'rating') return b.rating - a.rating;
-    return b.reviews - a.reviews; // popular
+    if (sort === 'rating') return (b.rating || 0) - (a.rating || 0);
+    return (b.reviews || b.reviewsCount || 0) - (a.reviews || a.reviewsCount || 0); // popular
   });
 
   const toggleWishlist = (id) => {
@@ -150,8 +203,10 @@ export default function ProductsPage({ category, onBack }) {
     });
   };
 
-  const addToCart = (id) => {
+  const addToCartAction = (product) => {
+    const id = product._id || product.id;
     setCartAdded((prev) => new Set(prev).add(id));
+    if (onAddToCart) onAddToCart(product);
     setTimeout(() => {
       setCartAdded((prev) => {
         const next = new Set(prev);
@@ -253,23 +308,33 @@ export default function ProductsPage({ category, onBack }) {
           </div>
         ) : (
           <div className="productsGrid">
-            {sorted.map((product) => (
-              <article key={product.id} className="productCard">
-                <div className="productImgWrap">
-                  <div className="productImgPlaceholder">
-                    <svg viewBox="0 0 80 80" fill="none" stroke="#C9956A" strokeWidth="1.5" opacity="0.4" width="60" height="60">
-                      <rect x="10" y="10" width="60" height="60" rx="8"/>
-                      <circle cx="30" cy="32" r="8"/>
-                      <path d="M10 58l18-16 14 12 10-8 18 14"/>
-                    </svg>
-                  </div>
+            {sorted.map((product) => {
+              const productId = product._id || product.id;
+              return (
+              <article key={productId} className="productCard">
+                <div 
+                  className="productImgWrap" 
+                  onClick={() => onProductClick && onProductClick(product)}
+                  style={{ cursor: onProductClick ? 'pointer' : 'default' }}
+                >
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} className="productImage" />
+                  ) : (
+                    <div className="productImgPlaceholder">
+                      <svg viewBox="0 0 80 80" fill="none" stroke="#C9956A" strokeWidth="1.5" opacity="0.4" width="60" height="60">
+                        <rect x="10" y="10" width="60" height="60" rx="8"/>
+                        <circle cx="30" cy="32" r="8"/>
+                        <path d="M10 58l18-16 14 12 10-8 18 14"/>
+                      </svg>
+                    </div>
+                  )}
                   <Badge text={product.badge} />
                   <button
-                    className={`wishlistBtn ${wishlist.has(product.id) ? 'active' : ''}`}
-                    onClick={() => toggleWishlist(product.id)}
+                    className={`wishlistBtn ${wishlist.has(productId) ? 'active' : ''}`}
+                    onClick={() => toggleWishlist(productId)}
                   >
-                    <svg viewBox="0 0 24 24" fill={wishlist.has(product.id) ? '#C9824A' : 'none'}
-                      stroke={wishlist.has(product.id) ? '#C9824A' : 'currentColor'}
+                    <svg viewBox="0 0 24 24" fill={wishlist.has(productId) ? '#C9824A' : 'none'}
+                      stroke={wishlist.has(productId) ? '#C9824A' : 'currentColor'}
                       strokeWidth="2">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                     </svg>
@@ -277,25 +342,43 @@ export default function ProductsPage({ category, onBack }) {
                 </div>
 
                 <div className="productBody">
-                  <h3 className="productName">{product.name}</h3>
-                  <p className="productDesc">{product.desc}</p>
+                  <h3 
+                    className="productName"
+                    onClick={() => onProductClick && onProductClick(product)}
+                    style={{ cursor: onProductClick ? 'pointer' : 'default' }}
+                  >
+                    {product.name}
+                  </h3>
+                  <p className="productDesc">{product.desc || product.description}</p>
                   <div className="productRatingRow">
-                    <Stars rating={product.rating} />
-                    <span className="productRatingNum">{product.rating}</span>
-                    <span className="productReviews">({product.reviews})</span>
+                    <Stars rating={product.rating || 0} />
+                    <span className="productRatingNum">{product.rating || 0}</span>
+                    <span className="productReviews">({product.reviews || product.reviewsCount || 0})</span>
                   </div>
                   <div className="productFooter">
-                    <span className="productPrice">{product.price}</span>
+                    <span className="productPrice">
+                      {(() => {
+                        const pricing = getEffectivePrice(product);
+                        return pricing.originalPrice ? (
+                          <>
+                            <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: 8 }}>
+                              {formatPrice(pricing.originalPrice)}
+                            </span>
+                            {formatPrice(pricing.finalPrice)}
+                          </>
+                        ) : formatPrice(pricing.finalPrice);
+                      })()}
+                    </span>
                     <button
-                      className={`addToCartBtn ${cartAdded.has(product.id) ? 'added' : ''}`}
-                      onClick={() => addToCart(product.id)}
+                      className={`addToCartBtn ${cartAdded.has(productId) ? 'added' : ''}`}
+                      onClick={() => addToCartAction(product)}
                     >
-                      {cartAdded.has(product.id) ? '✓ Added' : 'Add to Cart'}
+                      {cartAdded.has(productId) ? '✓ Added' : 'Add to Cart'}
                     </button>
                   </div>
                 </div>
               </article>
-            ))}
+            )})}
           </div>
         )}
       </div>

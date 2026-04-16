@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import profileBg from '../assets/images/profile-bg.png';
+import { api } from '../services/api';
 import './ProfilePage.css';
 
 /* ── Custom Icons ── */
@@ -49,12 +50,19 @@ const TABS = [
 
 export default function ProfilePage({ user, onLogout, onBack }) {
   const [activeTab, setActiveTab] = useState('details');
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      api.request('/orders/my').then(setOrders).catch(console.error);
+    }
+  }, [activeTab]);
 
   const [userDetails, setUserDetails] = useState({
-    name: user?.name || 'mansimran1414',
-    email: user?.email || 'mansimran1414@gmail.com',
-    phone: '+44 7700 900077',
-    joined: 'January 2024'
+    name: user?.name || 'Customer',
+    email: user?.email || '',
+    phone: '',
+    joined: '2024'
   });
 
   return (
@@ -92,6 +100,17 @@ export default function ProfilePage({ user, onLogout, onBack }) {
                   <span>{tab.label}</span>
                 </button>
               ))}
+
+              {user?.role === 'admin' && (
+                <button 
+                  className="profileNavItem" 
+                  onClick={() => window.location.href = '/admin'} 
+                  style={{ marginTop: '20px', background: 'rgba(201, 130, 74, 0.1)', color: '#C9824A' }}
+                >
+                  <span className="navIcon square"><IconSquare /></span>
+                  <span style={{ fontWeight: 'bold' }}>Admin Dashboard</span>
+                </button>
+              )}
 
               <button className="profileNavItem" onClick={onLogout} style={{ marginTop: '20px' }}>
                 <span className="navIcon square"><IconSquare /></span>
@@ -183,9 +202,21 @@ export default function ProfilePage({ user, onLogout, onBack }) {
               <div className="profileContentFade">
                 <h1 className="profileSecTitle">Order History</h1>
                 <p className="profileSecDesc">View your past orders and their status.</p>
-                <div style={{ padding: '20px', textAlign: 'center', color: '#664c39', fontStyle: 'italic' }}>
-                  You have no recent orders.
-                </div>
+                {orders.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: '#664c39', fontStyle: 'italic' }}>
+                    You have no recent orders.
+                  </div>
+                ) : (
+                  <div style={{ padding: '20px' }}>
+                    {orders.map(order => (
+                      <div key={order._id} style={{ marginBottom: '15px', padding: '15px', background: 'rgba(255,255,255,0.5)', borderRadius: '8px' }}>
+                        <div><strong>Order ID:</strong> #{order._id.slice(-6)}</div>
+                        <div><strong>Status:</strong> {order.status}</div>
+                        <div><strong>Total:</strong> ₹{order.total?.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

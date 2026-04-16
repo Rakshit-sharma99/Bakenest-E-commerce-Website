@@ -1,0 +1,132 @@
+.adminAuthWrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fdfaf6 0%, #ecdccf 100%);
+  font-family: 'Inter', sans-serif;
+  color: #3b2a1a;
+  padding: 24px;
+}
+
+.adminAuthCard {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(201, 130, 74, 0.25);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: authFadeIn 0.4s ease-out forwards;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.adminAuthCard h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2E1C0E;
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+
+.adminAuthCard p {
+  margin: -10px 0 10px;
+  font-size: 14px;
+  color: #8c6a51;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.adminAuthCard label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #554433;
+}
+
+.adminAuthCard input {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e0c9b8;
+  background: #faf7f2;
+  font-family: inherit;
+  font-size: 15px;
+  transition: all 0.2s;
+  color: #3b2a1a;
+}
+
+.adminAuthCard input:focus {
+  outline: none;
+  border-color: #c9824a;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(201, 130, 74, 0.15);
+}
+
+.adminError {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.adminAuthCard button[type="submit"] {
+  background: linear-gradient(135deg, #c9824a 0%, #b57442 100%);
+  color: #fff;
+  border: none;
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(201, 130, 74, 0.3);
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.adminAuthCard button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(201, 130, 74, 0.4);
+}
+
+.adminAuthCard button[type="submit"]:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.adminAuthCard button[type="submit"]:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.previewBtn {
+  background: transparent;
+  color: #8c6a51;
+  border: 1.5px solid #e0c9b8;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.previewBtn:hover {
+  background: #faf7f2;
+  border-color: #c9824a;
+  color: #c9824a;
+}

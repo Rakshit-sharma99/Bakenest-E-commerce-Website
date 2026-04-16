@@ -1,0 +1,85 @@
+/* ImageGallery.css */
+.product-image-gallery {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  height: 100%;
+}
+
+.gallery-thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 65px;
+  flex-shrink: 0;
+}
+
+.thumbnail-box {
+  width: 65px;
+  height: 65px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.thumbnail-box:hover,
+.thumbnail-box.active {
+  border: 2px solid #2874f0; /* Flipkart blue marker */
+  padding: 1px; /* Offset the 2px border visually */
+}
+
+.thumbnail-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.gallery-main-view {
+  flex-grow: 1;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  min-height: 400px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-view-image {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  transition: opacity 0.2s ease; /* Fast, flicker-free swap */
+}
+
+.gallery-placeholder {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .product-image-gallery {
+    flex-direction: column-reverse;
+  }
+
+  .gallery-thumbnails {
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+}
