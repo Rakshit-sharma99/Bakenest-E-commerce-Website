@@ -42,7 +42,7 @@ export const getProducts = async (req, res) => {
 
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate('relatedProducts');
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -76,10 +76,14 @@ export const createProduct = async (req, res) => {
     comparePrice: req.body.comparePrice ? toNumber(req.body.comparePrice, 0) : undefined,
     stock: toNumber(stock, 0),
     imageUrl: req.body.imageUrl || '',
+    images: req.body.images || [],
     isActive: isActive !== undefined ? Boolean(isActive) : true,
     featured: Boolean(featured),
     rating: toNumber(rating, 0),
     reviewsCount: toNumber(reviewsCount, 0),
+    warranty: req.body.warranty || '',
+    returnsAllowed: req.body.returnsAllowed !== undefined ? Boolean(req.body.returnsAllowed) : true,
+    relatedProducts: req.body.relatedProducts || [],
   });
 
   emitRealtimeUpdate('products:changed', { action: 'created', productId: product._id });
@@ -94,8 +98,9 @@ export const updateProduct = async (req, res) => {
   }
 
   const updatable = [
-    'name', 'slug', 'description', 'category', 'imageUrl', 'isActive', 'featured',
+    'name', 'slug', 'description', 'category', 'imageUrl', 'images', 'isActive', 'featured',
     'price', 'comparePrice', 'stock', 'rating', 'reviewsCount', 'appliedDiscount',
+    'warranty', 'returnsAllowed', 'relatedProducts'
   ];
 
   updatable.forEach((key) => {

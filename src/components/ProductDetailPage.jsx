@@ -150,12 +150,22 @@ const ProductDetailPage = ({ productId, initialProduct, onBack, user, onProductC
 
           {/* Flipkart style feature guarantees */}
           <div className="pdp-guarantees">
-            <div className="guarantee-item">
-              <span className="g-icon">✓</span> 30 Day Returns
-            </div>
-            <div className="guarantee-item">
-              <span className="g-icon">✓</span> 1 Year Warranty
-            </div>
+            {product.returnsAllowed !== false ? (
+              <div className="guarantee-item">
+                <span className="g-icon">✓</span> Return Possible
+              </div>
+            ) : (
+              <div className="guarantee-item">
+                <span className="g-icon" style={{color: '#999'}}>✕</span> No Returns
+              </div>
+            )}
+            
+            {product.warranty && (
+              <div className="guarantee-item">
+                <span className="g-icon">✓</span> {product.warranty}
+              </div>
+            )}
+            
             <div className="guarantee-item">
               <span className="g-icon">✓</span> Secure Payment
             </div>
@@ -187,6 +197,7 @@ const ProductDetailPage = ({ productId, initialProduct, onBack, user, onProductC
           category={product.category} 
           currentProductId={productId} 
           onProductClick={onProductClick} 
+          explicitProducts={product.relatedProducts}
         />
       </div>
 

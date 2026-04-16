@@ -20,6 +20,10 @@ const defaultProduct = {
   comparePrice: 0,
   stock: 0,
   imageUrl: '',
+  images: '',
+  warranty: '',
+  returnsAllowed: true,
+  relatedProducts: [],
 };
 
 export default function AdminDashboard({ adminUser, onLogout }) {
@@ -127,16 +131,24 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
     setSavingProduct(true);
     try {
+      // Pre-process images back into an array before sending
+      const payload = {
+        ...productForm,
+        images: typeof productForm.images === 'string' 
+          ? productForm.images.split(',').map(url => url.trim()).filter(Boolean) 
+          : productForm.images
+      };
+
       if (editingProductId) {
         await api.request(`/products/${editingProductId}`, {
           method: 'PUT',
-          body: JSON.stringify(productForm),
+          body: JSON.stringify(payload),
         });
         showToast('Product updated successfully');
       } else {
         await api.request('/products', {
           method: 'POST',
-          body: JSON.stringify(productForm),
+          body: JSON.stringify(payload),
         });
         showToast('Product created successfully');
       }
@@ -160,6 +172,10 @@ export default function AdminDashboard({ adminUser, onLogout }) {
       comparePrice: product.comparePrice || 0,
       stock: product.stock,
       imageUrl: product.imageUrl || '',
+      images: Array.isArray(product.images) ? product.images.join(', ') : (product.images || ''),
+      warranty: product.warranty || '',
+      returnsAllowed: product.returnsAllowed !== undefined ? product.returnsAllowed : true,
+      relatedProducts: product.relatedProducts || [],
     });
     setEditingProductId(product._id);
     setActiveTab('products');
@@ -333,6 +349,33 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                 </div>
               </div>
               <textarea placeholder="Description" value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} required />
+
+              <div className="formGrid2" style={{ marginTop: '10px' }}>
+                <input placeholder="Gallery Image URLs (comma separated)" value={productForm.images} onChange={(e) => setProductForm({ ...productForm, images: e.target.value })} />
+                <input placeholder="Warranty (e.g. 1 Year Warranty)" value={productForm.warranty} onChange={(e) => setProductForm({ ...productForm, warranty: e.target.value })} />
+                
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input type="checkbox" checked={productForm.returnsAllowed} onChange={(e) => setProductForm({ ...productForm, returnsAllowed: e.target.checked })} />
+                  Allow Returns (e.g. 30 Day Returns)
+                </label>
+
+                <div className="priceInputGroup">
+                   <span className="priceLabel">Related Products:</span>
+                   <select 
+                     multiple 
+                     size="3" 
+                     value={productForm.relatedProducts} 
+                     onChange={(e) => {
+                       const selected = Array.from(e.target.selectedOptions, option => option.value);
+                       setProductForm({ ...productForm, relatedProducts: selected });
+                     }}
+                   >
+                     {products.filter(p => p._id !== editingProductId).map(p => (
+                       <option key={p._id} value={p._id}>{p.name}</option>
+                     ))}
+                   </select>
+                </div>
+              </div>
 
               <div className="imageUploadRow">
                 <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadProductImage(e.target.files[0])} />

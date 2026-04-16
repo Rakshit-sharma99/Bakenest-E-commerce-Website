@@ -2,14 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import './RelatedProducts.css';
 
-const RelatedProducts = ({ category, currentProductId, onProductClick }) => {
+const RelatedProducts = ({ category, currentProductId, onProductClick, explicitProducts }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRelated = async () => {
       try {
-        // Fetch products matching the same category
+        if (explicitProducts && explicitProducts.length > 0) {
+          // Bypass API fetch if admin explicitly assigned relations
+          setProducts(explicitProducts.slice(0, 4));
+          return;
+        }
+
+        // Fetch products matching the same category optionally
         const payload = await api.request(`/products?category=${category}&limit=5`);
         if (payload?.items) {
           // Filter out the current product so it doesn't show up in its own "Related" list
@@ -23,8 +29,10 @@ const RelatedProducts = ({ category, currentProductId, onProductClick }) => {
       }
     };
 
-    if (category) fetchRelated();
-  }, [category, currentProductId]);
+    if (category || (explicitProducts && explicitProducts.length > 0)) {
+      fetchRelated();
+    }
+  }, [category, currentProductId, explicitProducts]);
 
   if (loading) return null;
   if (products.length === 0) return null;
