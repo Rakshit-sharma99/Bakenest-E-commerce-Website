@@ -423,3 +423,72 @@ td {
     width: 100%;
   }
 }
+
+/* ── Overview card variants ── */
+.adminCardsGrid article.dangerCard {
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(254, 226, 226, 0.4);
+}
+.adminCardsGrid article.dangerCard h4 { color: #dc2626; }
+.adminCardsGrid article.dangerCard p { color: #991b1b; }
+
+.adminCardsGrid article.alertCard {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(255, 251, 235, 0.6);
+}
+.adminCardsGrid article.alertCard h4 { color: #b45309; }
+.adminCardsGrid article.alertCard p { color: #92400e; }
+
+.adminCardsGrid article.revenueCard {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(209, 250, 229, 0.3);
+  grid-column: span 2;
+}
+.adminCardsGrid article.revenueCard h4 { color: #065f46; }
+.adminCardsGrid article.revenueCard p { color: #047857; }
+
+.outOfStockBadge {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  background: #dc2626;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+/* ── Preview banner ── */
+.adminPreviewBanner {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(201, 130, 74, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 13.5px;
+  color: #92400e;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+/* ── Toast enhancements ── */
+.adminToast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #2d1f15;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 9999;
+  animation: toastIn 0.3s ease;
+}
+.adminToast.error { background: #dc2626; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+

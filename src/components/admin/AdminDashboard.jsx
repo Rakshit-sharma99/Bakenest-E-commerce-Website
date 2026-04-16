@@ -88,7 +88,8 @@ export default function AdminDashboard({ adminUser, onLogout }) {
     ]);
 
     setProducts(productData.items || []);
-    setOrders(orderData || []);
+    // orderController now returns { orders, total } — extract the array
+    setOrders(Array.isArray(orderData) ? orderData : (orderData?.orders || []));
     setUsers(userData || []);
     setCoupons(couponData || []);
   };
@@ -276,8 +277,12 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
   const stats = {
     products: products.length,
-    lowStock: products.filter((p) => p.stock < 10).length,
+    lowStock: products.filter((p) => p.stock < 5).length,
+    outOfStock: products.filter((p) => p.stock === 0).length,
     pendingOrders: orders.filter((o) => o.status === 'pending').length,
+    revenue: orders
+      .filter((o) => o.status !== 'rejected')
+      .reduce((sum, o) => sum + (o.total || 0), 0),
     users: users.length,
   };
 
@@ -316,9 +321,10 @@ export default function AdminDashboard({ adminUser, onLogout }) {
         {activeTab === 'overview' && (
           <section className="adminCardsGrid">
             <article><h4>Total Products</h4><p>{stats.products}</p></article>
-            <article><h4>Low Stock Alerts</h4><p>{stats.lowStock}</p></article>
-            <article><h4>Pending Orders</h4><p>{stats.pendingOrders}</p></article>
+            <article className={stats.lowStock > 0 ? 'dangerCard' : ''}><h4>Low Stock (≤5)</h4><p>{stats.lowStock}</p>{stats.outOfStock > 0 && <span className="outOfStockBadge">{stats.outOfStock} out of stock</span>}</article>
+            <article className={stats.pendingOrders > 0 ? 'alertCard' : ''}><h4>Pending Orders</h4><p>{stats.pendingOrders}</p></article>
             <article><h4>Registered Users</h4><p>{stats.users}</p></article>
+            <article className="revenueCard"><h4>Total Revenue</h4><p>₹{stats.revenue.toLocaleString('en-IN')}</p></article>
           </section>
         )}
 
@@ -491,17 +497,18 @@ export default function AdminDashboard({ adminUser, onLogout }) {
             </div>
             <form className="adminForm inline premiumForm" onSubmit={createCoupon}>
               <div className="codeGenGroup">
-                <input placeholder="Code" value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} required />
+                <input placeholder="Code (e.g. SAVE20)" value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} required />
                 <button type="button" className="generateBtn" onClick={() => setCouponForm({...couponForm, code: Math.random().toString(36).substr(2, 8).toUpperCase()})}>Auto-Gen</button>
               </div>
               <select value={couponForm.discountType} onChange={(e) => setCouponForm({ ...couponForm, discountType: e.target.value })}>
-                <option value="percentage">Percentage</option>
-                <option value="flat">Flat</option>
+                <option value="percentage">Percentage (%)</option>
+                <option value="flat">Flat (₹)</option>
               </select>
-              <input type="number" min="0" placeholder="Value" value={couponForm.discountValue} onChange={(e) => setCouponForm({ ...couponForm, discountValue: Number(e.target.value) })} required />
+              <input type="number" min="0" placeholder={couponForm.discountType === 'percentage' ? 'Discount % (e.g. 15)' : 'Flat amount ₹'} value={couponForm.discountValue} onChange={(e) => setCouponForm({ ...couponForm, discountValue: Number(e.target.value) })} required />
+              <input type="number" min="0" placeholder="Min order amount ₹ (0 = no minimum)" value={couponForm.minOrderAmount || 0} onChange={(e) => setCouponForm({ ...couponForm, minOrderAmount: Number(e.target.value) })} />
               <select value={couponForm.appliesTo} onChange={(e) => setCouponForm({ ...couponForm, appliesTo: e.target.value })}>
-                <option value="all">All</option>
-                <option value="category">Category</option>
+                <option value="all">Applies to All Products</option>
+                <option value="category">Specific Category</option>
               </select>
               {couponForm.appliesTo === 'category' && (
                 <select value={couponForm.targetCategory} onChange={(e) => setCouponForm({ ...couponForm, targetCategory: e.target.value })}>
@@ -509,7 +516,7 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                   {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
               )}
-              <input placeholder="Description" value={couponForm.description} onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })} />
+              <input placeholder="Description (shown to users)" value={couponForm.description} onChange={(e) => setCouponForm({ ...couponForm, description: e.target.value })} />
               <button type="submit">Create Coupon</button>
             </form>
 
@@ -518,8 +525,8 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                 <thead>
                   <tr>
                     <th>Code</th>
-                    <th>Type</th>
-                    <th>Value</th>
+                    <th>Discount</th>
+                    <th>Min Order</th>
                     <th>Scope</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -528,13 +535,14 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                 <tbody>
                   {coupons.map((coupon) => (
                     <tr key={coupon._id}>
-                      <td>{coupon.code}</td>
-                      <td>{coupon.discountType}</td>
-                      <td>{coupon.discountValue}</td>
+                      <td><strong>{coupon.code}</strong></td>
+                      <td>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</td>
+                      <td>{coupon.minOrderAmount > 0 ? `₹${coupon.minOrderAmount}` : 'None'}</td>
                       <td>{coupon.appliesTo}{coupon.targetCategory ? ` (${coupon.targetCategory})` : ''}</td>
-                      <td>{coupon.active ? 'Enabled' : 'Disabled'}</td>
+                      <td><span className={`statusBadge ${coupon.active ? 'delivered' : 'rejected'}`}>{coupon.active ? 'Active' : 'Inactive'}</span></td>
                       <td className="actionsCell">
                         <button onClick={() => toggleCoupon(coupon._id)}>{coupon.active ? 'Disable' : 'Enable'}</button>
+                        <button className="dangerBtn" onClick={async () => { if (window.confirm('Delete this coupon?')) { try { await api.request(`/coupons/${coupon._id}`, { method: 'DELETE' }); showToast('Coupon deleted'); await loadAll(); } catch(e) { showToast(e.message, true); } } }}>Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -554,19 +562,25 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Delivery Address</th>
+                    <th>Role</th>
+                    <th>Saved Addresses</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
                     <tr key={user._id}>
-                      <td>{user.name}</td>
+                      <td><strong>{user.name}</strong></td>
                       <td>{user.email}</td>
                       <td>{user.phone || '-'}</td>
+                      <td><span className={`statusBadge ${user.role === 'admin' ? 'processing' : 'delivered'}`}>{user.role}</span></td>
                       <td>
-                        {[user.address?.line1, user.address?.city, user.address?.postalCode, user.address?.country]
-                          .filter(Boolean)
-                          .join(', ') || '-'}
+                        {user.addresses && user.addresses.length > 0
+                          ? user.addresses.map((addr, i) => (
+                              <div key={i} style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                <strong>{addr.label}:</strong> {addr.line1}, {addr.city} - {addr.postalCode}
+                              </div>
+                            ))
+                          : '-'}
                       </td>
                     </tr>
                   ))}
