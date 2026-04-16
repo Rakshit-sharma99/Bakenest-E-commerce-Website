@@ -207,12 +207,14 @@ function StorefrontApp() {
     if (selectedProduct) {
       return (
         <div style={{ paddingTop: '80px' }}>
-          <ProductDetailPage 
-            productId={selectedProduct._id || selectedProduct.id} 
+          <ProductDetailPage
+            productId={selectedProduct._id || selectedProduct.id}
             initialProduct={selectedProduct}
             onBack={handleBack}
             user={user}
             onProductClick={handleProductSelect}
+            onAddToCart={addToCart}
+            onCartOpen={() => setCartOpen(true)}
           />
         </div>
       );

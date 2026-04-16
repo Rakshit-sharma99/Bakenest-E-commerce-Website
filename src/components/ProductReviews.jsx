@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
 import StarRating from './StarRating';
 import ReviewForm from './ReviewForm';
 import ReviewList from './ReviewList';
@@ -14,29 +15,24 @@ const ProductReviews = ({ productId, user }) => {
   const [sortOrder, setSortOrder] = useState('latest');
 
   const fetchReviews = async () => {
+    // Only show loader on first fetch, not re-sorts
+    if (reviews.length === 0) setLoading(true);
+    setError('');
     try {
-      setLoading(true);
-      const url = `/api/reviews/${productId}?sort=${sortOrder}`;
-      const response = await fetch(url);
-      const data = await response.json();
+      // Use api.request() so the correct base URL + auth headers are applied
+      const data = await api.request(`/reviews/${productId}?sort=${sortOrder}`);
+      setReviews(data.data || []);
+      setBreakdown(data.breakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+      setTotalReviews(data.count || 0);
 
-      if (response.ok) {
-        setReviews(data.data || []);
-        setBreakdown(data.breakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
-        setTotalReviews(data.count || 0);
-
-        // Calculate average locally for UI freshness
-        if (data.count > 0 && data.data) {
-          const sum = data.data.reduce((acc, curr) => acc + curr.rating, 0);
-          setAverageRating(Math.round((sum / data.count) * 10) / 10);
-        }
+      if (data.count > 0 && data.data) {
+        const sum = data.data.reduce((acc, curr) => acc + curr.rating, 0);
+        setAverageRating(Math.round((sum / data.count) * 10) / 10);
       } else {
-        setError('Failed to fetch reviews');
+        setAverageRating(0);
       }
     } catch (err) {
-      console.error(err);
-      // Since backend isn't actively reachable in this environment due to DB error, 
-      // let's not crash the UI with endless spinners if it fails.
+      console.error('Reviews fetch failed:', err);
       setError('Could not load reviews at this time.');
     } finally {
       setLoading(false);
@@ -50,46 +46,51 @@ const ProductReviews = ({ productId, user }) => {
   }, [productId, sortOrder]);
 
   const handleReviewAdded = (newReview) => {
-    // Optimistically update the UI without needing a full refetch
-    setReviews([...reviews, newReview].sort((a,b) => sortOrder === 'latest' ? new Date(b.createdAt) - new Date(a.createdAt) : b.rating - a.rating));
-    setTotalReviews(prev => prev + 1);
-    
-    // Update breakdown & average
-    setBreakdown(prev => ({
-      ...prev,
-      [newReview.rating]: prev[newReview.rating] + 1
-    }));
-    
-    setAverageRating(prev => {
-      const oldSum = prev * totalReviews;
-      const newAvg = (oldSum + newReview.rating) / (totalReviews + 1);
+    const updatedReviews = [newReview, ...reviews].sort((a, b) =>
+      sortOrder === 'latest'
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : b.rating - a.rating
+    );
+    setReviews(updatedReviews);
+    const newTotal = totalReviews + 1;
+    setTotalReviews(newTotal);
+    setBreakdown((prev) => ({ ...prev, [newReview.rating]: (prev[newReview.rating] || 0) + 1 }));
+    setAverageRating((prev) => {
+      const newAvg = (prev * totalReviews + newReview.rating) / newTotal;
       return Math.round(newAvg * 10) / 10;
     });
   };
 
-  if (loading) return <div className="reviews-loading">Loading reviews...</div>;
+  if (loading) {
+    return (
+      <div className="reviews-loading">
+        <div className="reviews-loading-bar" />
+        <div className="reviews-loading-bar short" />
+      </div>
+    );
+  }
 
   return (
     <div className="product-reviews-section">
-      <h2 className="reviews-section-title">Ratings & Reviews</h2>
+      <h2 className="reviews-section-title">Ratings &amp; Reviews</h2>
 
       <div className="reviews-overview-container">
-        {/* Rating Breakdown */}
+        {/* Average Rating Box */}
         <div className="rating-summary-box">
           <div className="avg-rating-display">
             <span className="big-rating">{averageRating || 0}</span>
             <span className="star-icon">★</span>
           </div>
-          <div className="total-ratings-text">{totalReviews} Ratings & Reviews</div>
+          <div className="total-ratings-text">{totalReviews} Ratings &amp; Reviews</div>
         </div>
 
+        {/* Rating Breakdown Bars */}
         <div className="rating-bars-box">
-          {[5, 4, 3, 2, 1].map(star => {
+          {[5, 4, 3, 2, 1].map((star) => {
             const count = breakdown[star] || 0;
             const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-            
-            // Flipkart style coloring based on rating value
             let colorClass = 'bar-green';
+            if (star === 3) colorClass = 'bar-yellow';
             if (star === 2) colorClass = 'bar-orange';
             if (star === 1) colorClass = 'bar-red';
 
@@ -97,7 +98,10 @@ const ProductReviews = ({ productId, user }) => {
               <div key={star} className="rating-bar-row">
                 <span className="bar-label">{star} ★</span>
                 <div className="bar-bg">
-                  <div className={`bar-fill ${colorClass}`} style={{ width: `${percentage}%` }}></div>
+                  <div
+                    className={`bar-fill ${colorClass}`}
+                    style={{ width: `${percentage}%`, transition: 'width 0.4s ease' }}
+                  />
                 </div>
                 <span className="bar-count">{count}</span>
               </div>
@@ -106,10 +110,13 @@ const ProductReviews = ({ productId, user }) => {
         </div>
       </div>
 
-      {/* Review Form */}
+      {/* Error State */}
+      {error && <div className="reviews-error">{error}</div>}
+
+      {/* Review Submission Form */}
       <ReviewForm productId={productId} user={user} onReviewAdded={handleReviewAdded} />
 
-      {/* Sort Options */}
+      {/* Sort Controls */}
       {reviews.length > 0 && (
         <div className="review-sort-controls">
           <span className="sort-label">Sort by:</span>
@@ -120,8 +127,12 @@ const ProductReviews = ({ productId, user }) => {
         </div>
       )}
 
-      {/* List */}
-      <ReviewList reviews={reviews} />
+      {/* Reviews List */}
+      {reviews.length === 0 && !error ? (
+        <div className="reviews-empty">No reviews yet. Be the first to review this product!</div>
+      ) : (
+        <ReviewList reviews={reviews} />
+      )}
     </div>
   );
 };

@@ -268,3 +268,53 @@
     max-width: 100%;
   }
 }
+
+/* Cart feedback toast */
+.pdp-cart-feedback {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* No return styling */
+.guarantee-item.no-return .g-icon { color: #aaa; }
+
+/* Reviews loading state */
+.reviews-loading {
+  display: flex; flex-direction: column; gap: 12px; padding: 20px 0;
+}
+.reviews-loading-bar {
+  height: 18px; background: #eee; border-radius: 4px;
+  animation: pulse 1.5s infinite; width: 100%;
+}
+.reviews-loading-bar.short { width: 60%; }
+
+/* Reviews empty / error */
+.reviews-empty {
+  text-align: center; padding: 30px; color: #888; font-style: italic;
+  border: 1px dashed #e0e0e0; border-radius: 8px; margin-top: 20px;
+}
+.reviews-error {
+  text-align: center; padding: 20px; color: #c62828; font-size: 0.9rem;
+  background: #ffebee; border-radius: 8px; margin: 10px 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detailed-desc-content ul {
+  padding-left: 20px;
+  line-height: 2;
+}
+.detailed-desc-content ul li strong {
+  color: #555;
+}
+

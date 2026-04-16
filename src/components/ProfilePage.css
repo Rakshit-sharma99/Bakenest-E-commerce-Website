@@ -349,3 +349,151 @@
     max-width: 100%;
   }
 }
+
+/* ── Form Labels ── */
+.glassLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7a5c42;
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.glassInput { padding: 14px 18px; }
+.glassInputWrap { flex-direction: column; align-items: flex-start; }
+
+.disabled-input { opacity: 0.6; cursor: not-allowed; }
+.inputNote { font-size: 12px; color: #a08070; margin-top: 4px; }
+
+/* ── ProfilePage Feedback Banner ── */
+.profileFeedback {
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.profileFeedback.success { background: rgba(16,185,129,0.12); color: #065f46; border: 1px solid rgba(16,185,129,0.3); }
+.profileFeedback.error   { background: rgba(239,68,68,0.10); color: #991b1b; border: 1px solid rgba(239,68,68,0.25); }
+
+/* ── Profile Sidebar Extras ── */
+.profilePhone { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+.profileNavItem.admin-link { color: #C9824A; background: rgba(201,130,74,0.1); margin-top: 16px; }
+.profileNavItem.logout-btn { margin-top: 8px; }
+
+/* ── Addresses ── */
+.addrHeader { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+.addrHeader h1 { margin-bottom: 4px; }
+
+.addAddrBtn {
+  display: flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, #cc7f45 0%, #aa612a 100%);
+  color: white; border: none; border-radius: 22px; padding: 10px 20px;
+  font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(170,97,42,0.3); transition: transform 0.2s;
+}
+.addAddrBtn:hover { transform: translateY(-2px); }
+
+.addrLoading, .addrEmpty { text-align: center; padding: 40px 20px; color: #7a5c42; }
+.addrEmptyIcon { font-size: 48px; margin-bottom: 12px; }
+.addrEmpty p { font-size: 15px; margin-bottom: 16px; }
+
+/* Address Form Card */
+.addrFormCard {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.addrFormTitle { font-size: 16px; font-weight: 700; color: #3b2c22; margin-bottom: 18px; }
+.addrFormGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.addrFormField { display: flex; flex-direction: column; gap: 5px; }
+.addrFormField.full-width { grid-column: 1 / -1; }
+.addrFormField label { font-size: 12px; font-weight: 600; color: #7a5c42; text-transform: uppercase; letter-spacing: 0.04em; }
+.addrFormField input, .addrFormField select {
+  background: rgba(255,255,255,0.7); border: 1px solid rgba(200,180,160,0.5);
+  border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #3b2c22; outline: none;
+  transition: border 0.2s;
+}
+.addrFormField input:focus, .addrFormField select:focus { border-color: #cc7f45; }
+.checkboxLabel { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #5a3c28; cursor: pointer; }
+.checkboxLabel input[type='checkbox'] { width: 16px; height: 16px; cursor: pointer; }
+.addrFormActions { display: flex; gap: 12px; margin-top: 20px; }
+.addrSaveBtn {
+  background: linear-gradient(135deg, #cc7f45, #aa612a); color: white;
+  border: none; border-radius: 22px; padding: 12px 28px; font-weight: 600; cursor: pointer;
+}
+.addrCancelBtn {
+  background: rgba(0,0,0,0.06); color: #5a3c28; border: none;
+  border-radius: 22px; padding: 12px 24px; cursor: pointer;
+}
+
+/* Address Cards */
+.addrCardGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.addrCard {
+  background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 14px; padding: 18px; backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04); transition: transform 0.2s;
+}
+.addrCard:hover { transform: translateY(-2px); }
+.addrCard.default-addr { border-color: #cc7f45; box-shadow: 0 0 0 2px rgba(204,127,69,0.2); }
+.addrCardTop { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.addrLabel { font-size: 12px; font-weight: 700; background: rgba(204,127,69,0.15); color: #a0622b; padding: 3px 10px; border-radius: 20px; }
+.defaultBadge { font-size: 11px; background: #cc7f45; color: white; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.addrCardBody { display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; color: #4a3424; line-height: 1.6; }
+.addrCardBody strong { font-size: 14px; color: #2d1f15; }
+.addrCardActions { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.06); }
+.addrActionBtn { flex: 1; font-size: 12px; font-weight: 600; padding: 8px; border: 1px solid #cc7f45; color: #cc7f45; background: transparent; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.addrActionBtn:hover { background: #cc7f45; color: white; }
+.addrDeleteBtn { display: flex; align-items: center; gap: 5px; font-size: 12px; padding: 8px 12px; border: 1px solid rgba(239,68,68,0.4); color: #dc2626; background: transparent; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.addrDeleteBtn:hover { background: rgba(239,68,68,0.08); }
+
+/* ── Orders ── */
+.ordersList { display: flex; flex-direction: column; gap: 14px; }
+.orderCard {
+  background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 14px; overflow: hidden; backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.orderCardHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; cursor: pointer; transition: background 0.2s;
+}
+.orderCardHeader:hover { background: rgba(255,255,255,0.3); }
+.orderIdBlock { display: flex; flex-direction: column; }
+.orderIdLabel { font-size: 11px; font-weight: 600; color: #a08070; letter-spacing: 0.08em; text-transform: uppercase; }
+.orderId { font-size: 15px; font-weight: 700; color: #2d1f15; }
+.orderMeta { display: flex; align-items: center; gap: 12px; }
+.orderDate { font-size: 13px; color: #7a5c42; }
+.orderTotal { font-size: 15px; font-weight: 700; color: #2d1f15; }
+.orderStatusBadge { font-size: 11px; font-weight: 700; color: white; padding: 3px 10px; border-radius: 20px; text-transform: capitalize; }
+.orderChevron { font-size: 12px; color: #7a5c42; }
+
+.orderCardBody { padding: 0 20px 20px; border-top: 1px solid rgba(0,0,0,0.06); }
+.orderItemsList { margin-top: 16px; }
+.orderItemsList h4 { font-size: 13px; font-weight: 700; color: #7a5c42; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+.orderItem {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.orderItem:last-child { border-bottom: none; }
+.orderItemImg { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: rgba(0,0,0,0.05); }
+.orderItemInfo { flex: 1; }
+.orderItemName { display: block; font-size: 14px; font-weight: 600; color: #2d1f15; }
+.orderItemQty { font-size: 12px; color: #7a5c42; }
+.orderItemPrice { font-size: 14px; font-weight: 700; color: #2d1f15; white-space: nowrap; }
+
+.orderSummaryBlock { margin-top: 16px; background: rgba(0,0,0,0.03); border-radius: 10px; padding: 14px; }
+.orderSummaryRow { display: flex; justify-content: space-between; font-size: 14px; color: #4a3424; padding: 4px 0; }
+.orderSummaryRow.discount { color: #10b981; }
+.orderSummaryRow.total { font-weight: 700; font-size: 15px; color: #2d1f15; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 10px; margin-top: 6px; }
+
+.orderAddressBlock { margin-top: 16px; }
+.orderAddressBlock h4 { font-size: 13px; font-weight: 700; color: #7a5c42; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.orderAddressBlock address { font-style: normal; font-size: 13.5px; color: #4a3424; line-height: 1.7; }
+

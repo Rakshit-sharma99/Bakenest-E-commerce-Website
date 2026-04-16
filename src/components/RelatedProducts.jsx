@@ -53,7 +53,7 @@ const RelatedProducts = ({ category, currentProductId, onProductClick, explicitP
             <div className="related-body">
               <h4 className="related-name">{product.name}</h4>
               <div className="related-price">
-                ${product.price?.toFixed(2)}
+                ₹{Number(product.price).toLocaleString('en-IN')}
               </div>
               <div className="related-rating">
                 <span className="rating-badge">{product.rating || 0} ★</span>
