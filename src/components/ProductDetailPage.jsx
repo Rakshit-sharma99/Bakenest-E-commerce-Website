@@ -16,7 +16,11 @@ const ProductDetailPage = ({ productId, initialProduct, onBack, user, onProductC
     window.scrollTo({ top: 0, behavior: 'instant' });
 
     const fetchProduct = async () => {
-      if (initialProduct && initialProduct._id === productId) {
+      // Safely grab whichever ID format came through (MongoDB _id or mock id)
+      const incomingId = initialProduct?._id || initialProduct?.id;
+      
+      // If we already have the full product data passed dynamically, use it!
+      if (initialProduct && String(incomingId) === String(productId)) {
         setProduct(initialProduct);
         setLoading(false);
         return;

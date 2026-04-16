@@ -41,11 +41,18 @@ export const getProducts = async (req, res) => {
 };
 
 export const getProductById = async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (!product) {
-    return res.status(404).json({ message: 'Product not found' });
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    return res.json(product);
+  } catch (error) {
+    if (error.kind === 'ObjectId' || error.name === 'CastError') {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    return res.status(500).json({ message: 'Server error' });
   }
-  return res.json(product);
 };
 
 export const createProduct = async (req, res) => {
