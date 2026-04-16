@@ -41,16 +41,32 @@ function StorefrontApp() {
 
   const [user, setUser] = useState(authStore.getUser()); // { name, email }
   const [authOpen, setAuthOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [activeStaticPage, setActiveStaticPage] = useState(null);
-  const [showProfile, setShowProfile] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('pwa_selectedCategory')) || null; } catch { return null; }
+  });
+  const [activeStaticPage, setActiveStaticPage] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('pwa_activeStaticPage')) || null; } catch { return null; }
+  });
+  const [showProfile, setShowProfile] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('pwa_showProfile')) || false; } catch { return false; }
+  });
+  const [selectedProduct, setSelectedProduct] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('pwa_selectedProduct')) || null; } catch { return null; }
+  });
   
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
 
   const [sourceSection, setSourceSection] = useState(null);
   const shopCatRef = useRef(null);
+
+  // Sync state to avoid losing placement on refresh
+  useEffect(() => {
+    sessionStorage.setItem('pwa_selectedCategory', JSON.stringify(selectedCategory));
+    sessionStorage.setItem('pwa_activeStaticPage', JSON.stringify(activeStaticPage));
+    sessionStorage.setItem('pwa_showProfile', JSON.stringify(showProfile));
+    sessionStorage.setItem('pwa_selectedProduct', JSON.stringify(selectedProduct));
+  }, [selectedCategory, activeStaticPage, showProfile, selectedProduct]);
 
   const addToCart = (product) => {
     setCart((prev) => {
