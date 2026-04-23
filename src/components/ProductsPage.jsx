@@ -76,58 +76,47 @@ const SORT_OPTIONS = [
 ];
 
 export default function ProductsPage({ category, onBack, onAddToCart, onProductClick }) {
-  const [activeCatId, setActiveCatId] = useState(category.id);
+  const [activeCatId, setActiveCatId] = useState(category?.id || 'all');
   const [sort, setSort] = useState('popular');
   const [wishlist, setWishlist] = useState(new Set());
   const [cartAdded, setCartAdded] = useState(new Set());
   const [search, setSearch] = useState('');
   const [liveProducts, setLiveProducts] = useState([]);
-  const [loading, setLoading] = useState(true);  // ← loading state for skeleton
+  const [loading, setLoading] = useState(true);
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (catId) => {
     setLoading(true);
     try {
-      // limit=100 matches the new backend cap
-      const payload = await api.request('/products?limit=100&active=true');
+      const categoryParam = catId && catId !== 'all' ? `&category=${catId}` : '';
+      const payload = await api.request(`/products?limit=100&active=true${categoryParam}`);
       setLiveProducts(payload.items || []);
-    } catch {
+    } catch (err) {
+      console.error('Failed to load products:', err);
       setLiveProducts([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Sync internal category state if prop changes
-  useEffect(() => {
-    setActiveCatId(category.id);
-  }, [category.id]);
+  useEffect(() => { loadProducts(activeCatId); }, [activeCatId, loadProducts]);
 
   useEffect(() => {
-    loadProducts();
+    if (category?.id) setActiveCatId(category.id);
+  }, [category]);
 
+  useEffect(() => {
     const socket = getSocket();
-    const syncProducts = () => loadProducts();
-
+    const syncProducts = () => loadProducts(activeCatId);
     socket.on('products:changed', syncProducts);
-
-    return () => {
-      socket.off('products:changed', syncProducts);
-    };
-  }, []);
+    return () => { socket.off('products:changed', syncProducts); };
+  }, [activeCatId, loadProducts]);
 
   const activeLabel = activeCatId === 'all' 
     ? 'All Products' 
-    : (SHOP_CATEGORIES.find(c => c.id === activeCatId)?.label || category.label);
-
-  const liveFiltered =
-    activeCatId === 'all'
-      ? liveProducts
-      : liveProducts.filter((p) => p.category === activeCatId);
-
-  const rawProducts = liveFiltered;
+    : (SHOP_CATEGORIES.find(c => c.id === activeCatId)?.label || category?.label || 'Baking Tools');
 
   /* Filter */
-  const filtered = rawProducts.filter((p) =>
+  const filtered = liveProducts.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.desc || p.description || '').toLowerCase().includes(search.toLowerCase())
   );
@@ -165,7 +154,7 @@ export default function ProductsPage({ category, onBack, onAddToCart, onProductC
 
   return (
     <section className="productsPage" id="products-listing">
-      
+
       {/* ── Sticky top bar ── */}
       <div className="productsTopBar">
         <div className="productsTopBarInner">
@@ -244,14 +233,14 @@ export default function ProductsPage({ category, onBack, onAddToCart, onProductC
           <SkeletonProductGrid count={6} />
         ) : sorted.length === 0 ? (
           <div className="productsEmpty">
-             <svg viewBox="0 0 64 64" fill="none" stroke="#C9956A" strokeWidth="2" width="64" height="64">
+            <svg viewBox="0 0 64 64" fill="none" stroke="#C9956A" strokeWidth="2" width="64" height="64">
               <circle cx="32" cy="32" r="28" />
               <path d="M22 40s4-8 10-8 10 8 10 8" />
-              <circle cx="24" cy="26" r="3" fill="#C9956A"/>
-              <circle cx="40" cy="26" r="3" fill="#C9956A"/>
+              <circle cx="24" cy="26" r="3" fill="#C9956A" />
+              <circle cx="40" cy="26" r="3" fill="#C9956A" />
             </svg>
             <p>No products in "<strong>{activeLabel}</strong>" match "<strong>{search}</strong>"</p>
-            <button onClick={() => {setSearch(''); setActiveCatId('all');}} className="productsEmptyReset">
+            <button onClick={() => { setSearch(''); setActiveCatId('all'); }} className="productsEmptyReset">
               Reset search
             </button>
           </div>
@@ -262,89 +251,90 @@ export default function ProductsPage({ category, onBack, onAddToCart, onProductC
               // Stagger delay capped at stagger-6 to avoid over-delaying
               const staggerClass = `stagger-${Math.min(index + 1, 6)}`;
               return (
-              <article
-                key={productId}
-                className={`productCard animate-slideUp ${staggerClass}`}
-                role="listitem"
-              >
-                <div 
-                  className="productImgWrap" 
-                  onClick={() => onProductClick && onProductClick(product)}
-                  style={{ cursor: onProductClick ? 'pointer' : 'default' }}
+                <article
+                  key={productId}
+                  className={`productCard animate-slideUp ${staggerClass}`}
+                  role="listitem"
                 >
-                  {product.imageUrl ? (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="productImage"
-                      loading="lazy"
-                      width="300"
-                      height="300"
-                      decoding="async"
-                    />
-                  ) : (
-                    <div className="productImgPlaceholder">
-                      <svg viewBox="0 0 80 80" fill="none" stroke="#C9956A" strokeWidth="1.5" opacity="0.4" width="60" height="60">
-                        <rect x="10" y="10" width="60" height="60" rx="8"/>
-                        <circle cx="30" cy="32" r="8"/>
-                        <path d="M10 58l18-16 14 12 10-8 18 14"/>
-                      </svg>
-                    </div>
-                  )}
-                  <Badge text={product.badge} />
-                  <button
-                    className={`wishlistBtn ${wishlist.has(productId) ? 'active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); toggleWishlist(productId); }}
-                    aria-label={wishlist.has(productId) ? 'Remove from wishlist' : 'Add to wishlist'}
-                    aria-pressed={wishlist.has(productId)}
-                  >
-                    <svg viewBox="0 0 24 24" fill={wishlist.has(productId) ? '#C9824A' : 'none'}
-                      stroke={wishlist.has(productId) ? '#C9824A' : 'currentColor'}
-                      strokeWidth="2">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="productBody">
-                  <h3 
-                    className="productName"
+                  <div
+                    className="productImgWrap"
                     onClick={() => onProductClick && onProductClick(product)}
                     style={{ cursor: onProductClick ? 'pointer' : 'default' }}
                   >
-                    {product.name}
-                  </h3>
-                  <p className="productDesc">{product.desc || product.description}</p>
-                  <div className="productRatingRow">
-                    <Stars rating={product.rating || 0} />
-                    <span className="productRatingNum">{product.rating || 0}</span>
-                    <span className="productReviews">({product.reviews || product.reviewsCount || 0})</span>
-                  </div>
-                  <div className="productFooter">
-                    <span className="productPrice">
-                      {(() => {
-                        const pricing = getEffectivePrice(product);
-                        return pricing.originalPrice ? (
-                          <>
-                            <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: 8 }}>
-                              {formatPrice(pricing.originalPrice)}
-                            </span>
-                            {formatPrice(pricing.finalPrice)}
-                          </>
-                        ) : formatPrice(pricing.finalPrice);
-                      })()}
-                    </span>
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="productImage"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="productImgPlaceholder">
+                        <svg viewBox="0 0 80 80" fill="none" stroke="#C9956A" strokeWidth="1.5" opacity="0.4" width="60" height="60">
+                          <rect x="10" y="10" width="60" height="60" rx="8" />
+                          <circle cx="30" cy="32" r="8" />
+                          <path d="M10 58l18-16 14 12 10-8 18 14" />
+                        </svg>
+                      </div>
+                    )}
+                    <Badge text={product.badge} />
                     <button
-                      className={`addToCartBtn ${cartAdded.has(productId) ? 'added' : ''}`}
-                      onClick={() => addToCartAction(product)}
-                      aria-label={`Add ${product.name} to cart`}
+                      className={`wishlistBtn ${wishlist.has(productId) ? 'active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); toggleWishlist(productId); }}
+                      aria-label={wishlist.has(productId) ? 'Remove from wishlist' : 'Add to wishlist'}
+                      aria-pressed={wishlist.has(productId)}
                     >
-                      {cartAdded.has(productId) ? '✓ Added' : 'Add to Cart'}
+                      <svg viewBox="0 0 24 24" fill={wishlist.has(productId) ? '#C9824A' : 'none'}
+                        stroke={wishlist.has(productId) ? '#C9824A' : 'currentColor'}
+                        strokeWidth="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
                     </button>
                   </div>
-                </div>
-              </article>
-            )})}
+
+                  <div className="productBody">
+                    <h3
+                      className="productName"
+                      onClick={() => onProductClick && onProductClick(product)}
+                      style={{ cursor: onProductClick ? 'pointer' : 'default' }}
+                    >
+                      {product.name}
+                    </h3>
+                    <p className="productDesc">{product.desc || product.description}</p>
+                    <div className="productRatingRow">
+                      <Stars rating={product.rating || 0} />
+                      <span className="productRatingNum">{product.rating || 0}</span>
+                      <span className="productReviews">({product.reviews || product.reviewsCount || 0})</span>
+                    </div>
+                    <div className="productFooter">
+                      <span className="productPrice">
+                        {(() => {
+                          const pricing = getEffectivePrice(product);
+                          return pricing.originalPrice ? (
+                            <>
+                              <span style={{ textDecoration: 'line-through', opacity: 0.6, marginRight: 8 }}>
+                                {formatPrice(pricing.originalPrice)}
+                              </span>
+                              {formatPrice(pricing.finalPrice)}
+                            </>
+                          ) : formatPrice(pricing.finalPrice);
+                        })()}
+                      </span>
+                      <button
+                        className={`addToCartBtn ${cartAdded.has(productId) ? 'added' : ''}`}
+                        onClick={() => addToCartAction(product)}
+                        aria-label={`Add ${product.name} to cart`}
+                      >
+                        {cartAdded.has(productId) ? '✓ Added' : 'Add to Cart'}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         )}
       </div>

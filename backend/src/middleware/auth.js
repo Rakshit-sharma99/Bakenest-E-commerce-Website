@@ -29,3 +29,18 @@ export const adminOnly = (req, res, next) => {
   }
   next();
 };
+
+export const isAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+      const user = await User.findById(decoded.userId).select('-password');
+      if (user) req.user = user;
+    }
+    next();
+  } catch (error) {
+    next();
+  }
+};

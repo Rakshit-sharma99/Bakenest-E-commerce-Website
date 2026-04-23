@@ -104,10 +104,24 @@ npm run seed:admin
 - Admin login: `http://localhost:5173/admin`
 - API health: `http://localhost:5000/api/health`
 
+## Deployment
+
+### Backend (Render)
+1. Set Environment Variables: `PORT`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`.
+2. Build Command: `cd backend && npm install`
+3. Start Command: `cd backend && npm start`
+
+### Frontend (Vercel)
+1. Set Environment Variable: `VITE_API_URL` (point to your Render backend URL).
+2. Framework Preset: Vite.
+3. Root Directory: `.` (Project Root).
+
+---
+
 ## Production readiness notes
 
 - Replace default admin credentials and JWT secret
 - Set strict CORS `CLIENT_URL` values
 - Use a managed MongoDB cluster and secure networking
-- Prefer cloud object storage (S3/Cloudinary) over local file uploads for scale
+- **Important**: This project uses local storage for images (`backend/uploads`). For production on platforms like Render/Heroku, you should configure a persistent disk or migrate to Cloudinary/AWS S3 to prevent data loss on redeploys.
 - Add CI with lint/build/test checks before deployment

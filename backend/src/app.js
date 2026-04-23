@@ -46,7 +46,15 @@ const app = express();
 const corsOrigin = process.env.CLIENT_URL?.split(',').map((u) => u.trim()) || ['http://localhost:5173'];
 
 // Use Helmet to enhance application security with various HTTP headers
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "img-src": ["'self'", "data:", "http://localhost:5001", "https:"],
+    },
+  },
+}));
 // Apply Gzip compression to reduce payload sizes for responses larger than 1KB
 app.use(compression({ threshold: 1024 }));
 // Enable CORS with the specified origins and support for credentials (cookies/tokens)

@@ -42,6 +42,7 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   const [productForm, setProductForm] = useState(defaultProduct);
   const [editingProductId, setEditingProductId] = useState('');
   const [savingProduct, setSavingProduct] = useState(false);
+  const [relatedSearch, setRelatedSearch] = useState('');
 
   const [couponForm, setCouponForm] = useState({
     code: '',
@@ -111,6 +112,7 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   const resetProductForm = () => {
     setProductForm(defaultProduct);
     setEditingProductId('');
+    setRelatedSearch('');
   };
 
   const submitProduct = async (event) => {
@@ -167,12 +169,49 @@ export default function AdminDashboard({ adminUser, onLogout }) {
     setActiveTab('products');
   };
 
-  const removeProduct = async (id) => {
-    if (!window.confirm('Delete this product?')) return;
+  const archiveProduct = async (id) => {
+    if (!window.confirm('Archive this product? It will be hidden from the storefront.')) return;
 
     try {
       await api.request(`/products/${id}`, { method: 'DELETE' });
-      showToast('Product deleted');
+      showToast('Product archived successfully');
+      await loadAll();
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  };
+
+  const restoreProduct = async (id) => {
+    try {
+      await api.request(`/products/restore/${id}`, { method: 'PATCH' });
+      showToast('Product restored successfully');
+      await loadAll();
+    } catch (err) {
+      showToast(err.message, true);
+    }
+  };
+
+  const duplicateProduct = async (product) => {
+    try {
+      const payload = {
+        ...product,
+        name: `${product.name} (Copy)`,
+        slug: `${product.slug}-copy-${Date.now().toString().slice(-4)}`,
+        isActive: true
+      };
+      delete payload._id;
+      delete payload.createdAt;
+      delete payload.updatedAt;
+      delete payload.__v;
+      
+      // Ensure images is correctly formatted if it's currently a join string in form state
+      // But here product comes from the list, so it's already an array.
+      
+      await api.request('/products', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      showToast('Product duplicated successfully');
       await loadAll();
     } catch (err) {
       showToast(err.message, true);
@@ -331,19 +370,31 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
                 <div className="priceInputGroup">
                    <span className="priceLabel">Related Products:</span>
+                   <input 
+                     type="text" 
+                     placeholder="Filter related models..." 
+                     className="relatedSearch"
+                     value={relatedSearch}
+                     onChange={(e) => setRelatedSearch(e.target.value)}
+                     style={{ marginBottom: '5px', padding: '8px', borderRadius: '8px', border: '1px solid #ddd' }}
+                   />
                    <select 
                      multiple 
-                     size="3" 
+                     size="4" 
                      value={productForm.relatedProducts} 
                      onChange={(e) => {
                        const selected = Array.from(e.target.selectedOptions, option => option.value);
                        setProductForm({ ...productForm, relatedProducts: selected });
                      }}
                    >
-                     {products.filter(p => p._id !== editingProductId).map(p => (
-                       <option key={p._id} value={p._id}>{p.name}</option>
-                     ))}
+                     {products
+                       .filter(p => p._id !== editingProductId)
+                       .filter(p => !relatedSearch || p.name.toLowerCase().includes(relatedSearch.toLowerCase()))
+                       .map(p => (
+                         <option key={p._id} value={p._id}>{p.name}</option>
+                       ))}
                    </select>
+                   <p className="fieldNote">Hold Ctrl/Cmd to select multiple</p>
                 </div>
               </div>
 
@@ -373,6 +424,7 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                       <th>Category</th>
                       <th>Prices</th>
                       <th>Stock</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -387,9 +439,19 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                           {product.comparePrice > product.price && <span className="adminOldPrice">₹{product.comparePrice.toFixed(2)}</span>}
                         </td>
                         <td className={product.stock < 10 ? 'dangerText' : ''}>{product.stock}</td>
+                        <td>
+                          <span className={`statusBadge ${product.isActive ? 'delivered' : 'rejected'}`}>
+                            {product.isActive ? 'Active' : 'Archived'}
+                          </span>
+                        </td>
                         <td className="actionsCell">
                         <button onClick={() => editProduct(product)}>Edit</button>
-                        <button className="dangerBtn" onClick={() => removeProduct(product._id)}>Delete</button>
+                        <button className="ghostBtn" onClick={() => duplicateProduct(product)}>Copy</button>
+                        {product.isActive ? (
+                          <button className="dangerBtn" onClick={() => archiveProduct(product._id)}>Archive</button>
+                        ) : (
+                          <button style={{ background: '#5C9E6E' }} onClick={() => restoreProduct(product._id)}>Restore</button>
+                        )}
                       </td>
                     </tr>
                   ))}

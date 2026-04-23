@@ -59,6 +59,10 @@ export default function CartOverlay({
   const discountAmount = couponState?.discountAmount || 0;
   const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
+  /* ─── Stock Validation ─── */
+  const outOfStockItems = cart.filter(item => item.quantity > (item.stock || 0));
+  const hasStockError = outOfStockItems.length > 0;
+
   /* ─── Load saved addresses if user is logged in ─── */
   useEffect(() => {
     if (user) {
@@ -237,10 +241,21 @@ export default function CartOverlay({
                       <div className="cartItemInfo">
                         <h4>{item.name}</h4>
                         <p className="cartItemPrice">₹{Number(item.price).toLocaleString('en-IN')}</p>
+                        
+                        {item.quantity > (item.stock || 0) && (
+                          <p className="cartItemStockError">
+                            ⚠ Only {(item.stock || 0)} left in stock
+                          </p>
+                        )}
+                        
                         <div className="cartItemActions">
                           <button className="qtyBtn" onClick={() => onUpdateQuantity(item, -1)}>−</button>
                           <span className="qtyDisplay">{item.quantity}</span>
-                          <button className="qtyBtn" onClick={() => onUpdateQuantity(item, 1)}>+</button>
+                          <button 
+                            className="qtyBtn" 
+                            onClick={() => onUpdateQuantity(item, 1)}
+                            disabled={item.quantity >= (item.stock || 0)}
+                          >+</button>
                           <button className="removeBtn" onClick={() => onRemoveItem(item)}>Remove</button>
                         </div>
                       </div>
@@ -322,14 +337,22 @@ export default function CartOverlay({
                 </div>
 
                 {/* ─── Proceed Button ─── */}
+                {/* ─── Proceed Button ─── */}
+                {hasStockError && (
+                  <div className="cartStockWarning" style={{ color: '#ff4d4d', fontSize: '0.9rem', marginBottom: '10px', textAlign: 'center' }}>
+                    ⚠ Some items in your cart exceed available stock.
+                  </div>
+                )}
+
                 <button
                   className="checkoutBtn"
+                  disabled={hasStockError}
                   onClick={() => {
                     if (!user) { onAuthRequest(); return; }
                     setView('checkout');
                   }}
                 >
-                  Proceed to Checkout — ₹{total.toLocaleString('en-IN')}
+                  {hasStockError ? 'Adjust Quantities to Proceed' : `Proceed to Checkout — ₹${total.toLocaleString('en-IN')}`}
                 </button>
               </div>
             )}

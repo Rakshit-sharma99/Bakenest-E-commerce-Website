@@ -52,7 +52,7 @@ const buildQuery = (query) => {
   return q;
 };
 
-// Controller to fetch a paginated and filterable list of products (Public Access)
+// Controller to fetch a paginated and filterable list of products (Public & Admin Access)
 export const getProducts = async (req, res, next) => {
   try {
     // Determine the current page number, ensuring it is at least 1
@@ -68,11 +68,22 @@ export const getProducts = async (req, res, next) => {
     const order  = req.query.order === 'asc' ? 1 : -1;
 
     // Use the helper to construct the query object from request parameters
-    const query = buildQuery(req.query);
+    const queryParams = buildQuery(req.query);
+
+    // ── RBAC Logic for Public vs Admin ───────────────────────────────────────
+    // If user is not admin and hasn't explicitly asked for inactive, force ACTIVE ONLY
+    const isAdmin = req.user && req.user.role === 'admin';
+    if (!isAdmin) {
+      queryParams.isActive = true; // Hard-enforce active only for public
+    } else if (req.query.active === undefined) {
+      // For admins, default to everything unless they explicitly filter
+      // (No changes needed if they didn't specify active filter)
+    }
+
     // Optimization: If a search term exists and no $or query was built, use $text search instead
-    if (req.query.search?.trim() && !query.$or) {
-      query.$text = { $search: req.query.search.trim() };
-      delete query.$or;
+    if (req.query.search?.trim() && !queryParams.$or) {
+      queryParams.$text = { $search: req.query.search.trim() };
+      delete queryParams.$or;
     }
 
     // Define which fields to include in the product list view to reduce data transfer
@@ -85,13 +96,13 @@ export const getProducts = async (req, res, next) => {
     // Execute the database queries for items and total count in parallel for efficiency
     const [items, total] = await Promise.all([
       // Fetch the products matching the query with projection, sorting, and pagination
-      Product.find(query, LIST_PROJECTION)
+      Product.find(queryParams, LIST_PROJECTION)
         .sort({ [sortBy]: order })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(), // Use .lean() to convert documents to plain JSON objects for better performance
       // Count the total number of documents matching the query (for pagination metadata)
-      Product.countDocuments(query),
+      Product.countDocuments(queryParams),
     ]);
 
     // Return the items, total count, current page, and calculated total pages as JSON
@@ -262,7 +273,7 @@ export const updateProduct = async (req, res, next) => {
   }
 };
 
-// Controller to delete a product by its ID (Admin Only)
+// Controller to archive a product (Soft Delete - Admin Only)
 export const deleteProduct = async (req, res, next) => {
   try {
     // Validate the product ID format; return 400 if invalid
@@ -270,17 +281,51 @@ export const deleteProduct = async (req, res, next) => {
       return res.status(400).json({ message: 'Invalid product ID' });
     }
 
-    // Attempt to locate and remove the product from the database
-    const deleted = await Product.findByIdAndDelete(req.params.id);
-    // Return 404 NOT FOUND if the product was already missing
-    if (!deleted) return res.status(404).json({ message: 'Product not found' });
+    // Soft delete: Find and update the product to set isActive to false
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true }
+    );
 
-    // Broadcast a real-time event indicating that a product has been deleted
-    emitRealtimeUpdate('products:changed', { action: 'deleted', productId: req.params.id });
+    // Return 404 NOT FOUND if the product was missing
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Broadcast a real-time event indicating that a product has been updated (archived)
+    emitRealtimeUpdate('products:changed', { action: 'archived', productId: req.params.id });
+    
     // Return a success message as JSON
-    return res.json({ message: 'Product deleted successfully' });
+    return res.json({ message: 'Product archived successfully', product });
   } catch (err) {
     // Forward any errors to the error handling middleware
+    next(err);
+  }
+};
+
+// Controller to restore an archived product (Admin Only)
+export const restoreProduct = async (req, res, next) => {
+  try {
+    // Validate the product ID format
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid product ID' });
+    }
+
+    // Find and update the product to set isActive to true
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { isActive: true },
+      { new: true }
+    );
+
+    // Return 404 NOT FOUND if the product was missing
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Broadcast a real-time event indicating that a product has been restored
+    emitRealtimeUpdate('products:changed', { action: 'restored', productId: req.params.id });
+
+    // Return the restored product as JSON
+    return res.json({ message: 'Product restored successfully', product });
+  } catch (err) {
     next(err);
   }
 };

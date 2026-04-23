@@ -10,16 +10,18 @@ import CartOverlay from './components/CartOverlay';
 import { authStore } from './services/api';
 import { useToast, ToastContainer } from './components/Toast';
 import { SkeletonProductGrid } from './components/SkeletonLoader';
+import FeaturedProducts from './components/FeaturedProducts';
+import BigShopCTA from './components/BigShopCTA';
 
 // ── React.lazy: page-level code splitting (loaded on demand) ─────────────────
-const AuthPage         = lazy(() => import('./components/AuthPage'));
-const ProductsPage     = lazy(() => import('./components/ProductsPage'));
-const ProfilePage      = lazy(() => import('./components/ProfilePage'));
-const StaticPage       = lazy(() => import('./components/StaticPage'));
-const AdminLogin       = lazy(() => import('./components/admin/AdminLogin'));
-const AdminDashboard   = lazy(() => import('./components/admin/AdminDashboard'));
+const AuthPage = lazy(() => import('./components/AuthPage'));
+const ProductsPage = lazy(() => import('./components/ProductsPage'));
+const ProfilePage = lazy(() => import('./components/ProfilePage'));
+const StaticPage = lazy(() => import('./components/StaticPage'));
+const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const ProductDetailPage = lazy(() => import('./components/ProductDetailPage'));
-const InvoicePage      = lazy(() => import('./components/InvoicePage'));
+const InvoicePage = lazy(() => import('./components/InvoicePage'));
 
 const ADMIN_PATH = (import.meta.env.VITE_ADMIN_PATH || '/_bknst_a93f2d4_portal').trim();
 
@@ -84,7 +86,7 @@ function StorefrontApp() {
   const [selectedProduct, setSelectedProduct] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('pwa_selectedProduct')) || null; } catch { return null; }
   });
-  
+
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [invoiceOrderId, setInvoiceOrderId] = useState(null);
@@ -127,7 +129,7 @@ function StorefrontApp() {
   };
 
   /* ── VIEW HANDLERS ── */
-  
+
   const resetToHome = () => {
     setSelectedCategory(null);
     setActiveStaticPage(null);
@@ -156,7 +158,7 @@ function StorefrontApp() {
   const handleBack = () => {
     if (selectedProduct) {
       setSelectedProduct(null);
-      return; 
+      return;
       // This will fall back to whichever state was active previously, 
       // but depending on logic we might want to default to home or previous list
       // For immediate simplicity: Back from PDP -> Products List or Home. 
@@ -172,7 +174,7 @@ function StorefrontApp() {
         let targetId = 'home';
         if (prevSource === 'collections') targetId = 'categories';
         else if (prevSource === 'categories') targetId = 'shop-by-category';
-        
+
         const el = document.getElementById(targetId);
         el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 50);
@@ -267,10 +269,10 @@ function StorefrontApp() {
     if (selectedCategory) {
       return (
         <div style={{ paddingTop: '80px' }}>
-          <ProductsPage 
-            category={selectedCategory} 
-            onBack={handleBack} 
-            onAddToCart={addToCart} 
+          <ProductsPage
+            category={selectedCategory}
+            onBack={handleBack}
+            onAddToCart={addToCart}
             onProductClick={handleProductSelect}
           />
         </div>
@@ -281,14 +283,29 @@ function StorefrontApp() {
       <main>
         <HeroSection onShopClick={() => handleNavClick('Shop')} />
         <CategoryCards onSelect={(cat) => handleCategorySelect(cat, 'collections')} />
-        
-        <CurvedLoop 
-          marqueeText="Get ✦ all ✦ baking ✦ equipment ✦ from ✦ us ✦ " 
-          speed={2} 
-          curveAmount={400} 
+
+        <CurvedLoop
+          marqueeText="Get ✦ all ✦ baking ✦ equipment ✦ from ✦ us ✦ "
+          speed={2}
+          curveAmount={400}
         />
 
-        <ShopByCategory ref={shopCatRef} onSelect={(cat) => handleCategorySelect(cat, 'categories')} />
+        <FeaturedProducts 
+          title="Premium Baking Inventory" 
+          category="all"
+          onProductClick={handleProductSelect}
+          onAddToCart={addToCart}
+        />
+
+        <FeaturedProducts 
+          title="Must-Have Tools" 
+          category="all"
+          page={2}
+          onProductClick={handleProductSelect}
+          onAddToCart={addToCart}
+        />
+
+        <BigShopCTA onClick={() => handleNavClick('Shop')} />
       </main>
     );
   };
@@ -299,14 +316,15 @@ function StorefrontApp() {
       <a href="#main-content" className="skip-link">Skip to main content</a>
 
       {!authOpen && (
-        <Header 
+        <Header
           user={user}
-          onAuthOpen={handleUserIconClick} 
+          onAuthOpen={handleUserIconClick}
           onSearchClick={() => {
-            if (selectedCategory || activeStaticPage || showProfile) resetToHome();
-            setTimeout(() => shopCatRef.current?.focusSearch(), 200);
-          }} 
-          onNavClick={handleNavClick} 
+            setCurrentPage('products');
+            setSelectedCategory('all');
+            window.scrollTo(0, 0);
+          }}
+          onNavClick={handleNavClick}
           onCartClick={() => setCartOpen(true)}
         />
       )}
