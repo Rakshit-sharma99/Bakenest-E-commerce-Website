@@ -32,4 +32,14 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ── Performance Indexes ───────────────────────────────────────────────────
+// Compound: category filter + price sort + rating sort (most common query shape)
+productSchema.index({ category: 1, price: 1, rating: -1 });
+// Compound: active listing sorted by newest
+productSchema.index({ isActive: 1, createdAt: -1 });
+// Compound: featured products sorted by rating
+productSchema.index({ featured: 1, rating: -1 });
+// Full-text search (name weighted 10x, description 5x)
+productSchema.index({ name: 'text', description: 'text' }, { weights: { name: 10, description: 5 }, name: 'product_text_search' });
+
 export default mongoose.model('Product', productSchema);

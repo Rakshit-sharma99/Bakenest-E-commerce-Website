@@ -112,21 +112,3 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
-
-.previewBtn {
-  background: transparent;
-  color: #8c6a51;
-  border: 1.5px solid #e0c9b8;
-  padding: 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.previewBtn:hover {
-  background: #faf7f2;
-  border-color: #c9824a;
-  color: #c9824a;
-}

@@ -4,6 +4,8 @@ import './AuthPage.css';
 import { api, authStore } from '../services/api';
 import { GoogleLogin } from '@react-oauth/google';
 
+const ENABLE_GOOGLE_LOGIN = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
 /* ── tiny icon helpers ── */
 const IconEmail = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
@@ -143,22 +145,25 @@ export default function AuthPage({ onClose, onAuthSuccess }) {
             </button>
           </form>
 
-          <div className="authDivider">
-            <span /> <em>OR</em> <span />
-          </div>
+          {ENABLE_GOOGLE_LOGIN && (
+            <>
+              <div className="authDivider">
+                <span /> <em>OR</em> <span />
+              </div>
 
-          <div className="authSocial">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setError('Google login failed')}
-              useOneTap
-              theme="outline"
-              size="large"
-              shape="pill"
-              logo_alignment="center"
-              text="continue_with"
-            />
-          </div>
+              <div className="authSocial">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google login failed')}
+                  theme="outline"
+                  size="large"
+                  shape="pill"
+                  logo_alignment="center"
+                  text="continue_with"
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

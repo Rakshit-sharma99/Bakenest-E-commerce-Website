@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import profileBg from '../assets/images/profile-bg.png';
 import { api } from '../services/api';
 import './ProfilePage.css';
+import { SkeletonAddressCard, SkeletonOrderRow } from './SkeletonLoader';
 
 /* ── Icons ── */
 const IconUser = () => (
@@ -41,6 +42,8 @@ const STATUS_COLORS = {
   rejected: '#ef4444',
 };
 
+const ADMIN_PATH = (import.meta.env.VITE_ADMIN_PATH || '/_bknst_a93f2d4_portal').trim();
+
 const EMPTY_ADDRESS = {
   label: 'Home',
   fullName: '',
@@ -54,7 +57,7 @@ const EMPTY_ADDRESS = {
   isDefault: false,
 };
 
-export default function ProfilePage({ user, onLogout, onBack }) {
+export default function ProfilePage({ user, onLogout, onBack, onViewInvoice }) {
   const [activeTab, setActiveTab] = useState('details');
 
   /* ─── Personal Info ─── */
@@ -204,7 +207,7 @@ export default function ProfilePage({ user, onLogout, onBack }) {
               {user?.role === 'admin' && (
                 <button
                   className="profileNavItem admin-link"
-                  onClick={() => { window.location.href = '/admin'; }}
+                  onClick={() => { window.location.href = ADMIN_PATH; }}
                 >
                   <span className="navIcon"><IconAdmin /></span>
                   <span>Admin Dashboard</span>
@@ -364,7 +367,7 @@ export default function ProfilePage({ user, onLogout, onBack }) {
 
                 {/* Address Cards */}
                 {addrLoading ? (
-                  <div className="addrLoading">Loading addresses...</div>
+                  <SkeletonAddressCard count={3} />
                 ) : addresses.length === 0 ? (
                   <div className="addrEmpty">
                     <div className="addrEmptyIcon">📍</div>
@@ -408,7 +411,7 @@ export default function ProfilePage({ user, onLogout, onBack }) {
                 <p className="profileSecDesc">All your past and current orders.</p>
 
                 {ordersLoading ? (
-                  <div className="addrLoading">Loading orders...</div>
+                  <SkeletonOrderRow count={4} />
                 ) : orders.length === 0 ? (
                   <div className="addrEmpty">
                     <div className="addrEmptyIcon">📦</div>
@@ -495,6 +498,18 @@ export default function ProfilePage({ user, onLogout, onBack }) {
                                   {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.postalCode}<br />
                                   {order.shippingAddress.country}
                                 </address>
+                              </div>
+                            )}
+
+                            {/* View Invoice */}
+                            {onViewInvoice && (
+                              <div style={{ marginTop: '16px', textAlign: 'right' }}>
+                                <button
+                                  className="invViewBtn"
+                                  onClick={() => onViewInvoice(order._id)}
+                                >
+                                  🧾 View Invoice
+                                </button>
                               </div>
                             )}
                           </div>

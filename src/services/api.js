@@ -49,17 +49,10 @@ export const authStore = {
   saveSession(payload) {
     localStorage.setItem('bakenest_token', payload.token);
     localStorage.setItem('bakenest_user', JSON.stringify(payload.user));
-    localStorage.removeItem('bakenest_preview_mode');
-  },
-  savePreviewSession(user) {
-    localStorage.removeItem('bakenest_token');
-    localStorage.setItem('bakenest_user', JSON.stringify(user));
-    localStorage.setItem('bakenest_preview_mode', 'true');
   },
   clearSession() {
     localStorage.removeItem('bakenest_token');
     localStorage.removeItem('bakenest_user');
-    localStorage.removeItem('bakenest_preview_mode');
   },
   getUser() {
     const raw = localStorage.getItem('bakenest_user');

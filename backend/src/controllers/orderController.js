@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
+import Invoice from '../models/Invoice.js';
 import { emitRealtimeUpdate } from '../config/socket.js';
 
 // ── Helper: validate ObjectId ──────────────────────────────────────────────
@@ -143,6 +144,11 @@ export const createOrder = async (req, res, next) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    // ── Auto-generate Invoice (non-blocking; never fails the order) ───────
+    Invoice.create({ orderId: order._id }).catch((err) =>
+      console.error('[Invoice] Failed to create invoice for order', order._id, err.message)
+    );
 
     emitRealtimeUpdate('orders:changed', { action: 'created', orderId: order._id });
     emitRealtimeUpdate('products:changed', { action: 'stock-updated' });

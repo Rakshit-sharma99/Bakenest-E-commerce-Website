@@ -3,7 +3,6 @@ export const SHOP_CATEGORIES = [
     id: 'mixing-bowls',
     label: 'Mixing Bowls',
     tagline: 'Every great bake starts here',
-    count: 24,
     accent: '#C9956A',
     bg: 'linear-gradient(135deg, #f5e2c8 0%, #e8c89a 100%)',
     icon: (
@@ -19,7 +18,6 @@ export const SHOP_CATEGORIES = [
     id: 'baking-pans',
     label: 'Baking Pans',
     tagline: 'Shape your sweet creations',
-    count: 36,
     accent: '#A0735C',
     bg: 'linear-gradient(135deg, #eddcc6 0%, #d4a87a 100%)',
     icon: (
@@ -37,7 +35,6 @@ export const SHOP_CATEGORIES = [
     id: 'measuring-tools',
     label: 'Measuring Tools',
     tagline: 'Precision in every pinch',
-    count: 18,
     accent: '#8B6348',
     bg: 'linear-gradient(135deg, #f0dfc5 0%, #c9a07a 100%)',
     icon: (
@@ -56,7 +53,6 @@ export const SHOP_CATEGORIES = [
     id: 'rolling-pins',
     label: 'Rolling Pins',
     tagline: 'Roll to perfection, every time',
-    count: 12,
     accent: '#B07D55',
     bg: 'linear-gradient(135deg, #f2e0c4 0%, #dbb884 100%)',
     icon: (
@@ -72,7 +68,6 @@ export const SHOP_CATEGORIES = [
     id: 'whisks-spatulas',
     label: 'Whisks & Spatulas',
     tagline: 'Fold, whisk and mix with ease',
-    count: 29,
     accent: '#9A6040',
     bg: 'linear-gradient(135deg, #f5e5cc 0%, #cf9f72 100%)',
     icon: (
@@ -89,7 +84,6 @@ export const SHOP_CATEGORIES = [
     id: 'decorating',
     label: 'Decorating Tools',
     tagline: 'Make every cake a masterpiece',
-    count: 41,
     accent: '#C47E50',
     bg: 'linear-gradient(135deg, #faead4 0%, #e0a86c 100%)',
     icon: (
@@ -103,7 +97,6 @@ export const SHOP_CATEGORIES = [
     id: 'timers-scales',
     label: 'Timers & Scales',
     tagline: 'Every gram and second counts',
-    count: 15,
     accent: '#8C6040',
     bg: 'linear-gradient(135deg, #eddcc8 0%, #c9996a 100%)',
     icon: (
@@ -121,7 +114,6 @@ export const SHOP_CATEGORIES = [
     id: 'storage',
     label: 'Storage & Jars',
     tagline: 'Fresh ingredients, beautiful spaces',
-    count: 22,
     accent: '#B8895A',
     bg: 'linear-gradient(135deg, #f0dfc8 0%, #d4a478 100%)',
     icon: (

@@ -1,45 +1,76 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+// ── Always-eager: tiny shell components (part of initial bundle) ────────────
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import CategoryCards from './components/CategoryCards';
 import CurvedLoop from './components/CurvedLoop';
 import ShopByCategory from './components/ShopByCategory';
 import Footer from './components/Footer';
-import AuthPage from './components/AuthPage';
-import ProductsPage from './components/ProductsPage';
-import ProfilePage from './components/ProfilePage';
-import StaticPage from './components/StaticPage';
-import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
 import CartOverlay from './components/CartOverlay';
-import ProductDetailPage from './components/ProductDetailPage';
 import { authStore } from './services/api';
+import { useToast, ToastContainer } from './components/Toast';
+import { SkeletonProductGrid } from './components/SkeletonLoader';
+
+// ── React.lazy: page-level code splitting (loaded on demand) ─────────────────
+const AuthPage         = lazy(() => import('./components/AuthPage'));
+const ProductsPage     = lazy(() => import('./components/ProductsPage'));
+const ProfilePage      = lazy(() => import('./components/ProfilePage'));
+const StaticPage       = lazy(() => import('./components/StaticPage'));
+const AdminLogin       = lazy(() => import('./components/admin/AdminLogin'));
+const AdminDashboard   = lazy(() => import('./components/admin/AdminDashboard'));
+const ProductDetailPage = lazy(() => import('./components/ProductDetailPage'));
+const InvoicePage      = lazy(() => import('./components/InvoicePage'));
+
+const ADMIN_PATH = (import.meta.env.VITE_ADMIN_PATH || '/_bknst_a93f2d4_portal').trim();
+
+const normalizePath = (path) => {
+  if (!path) return '/';
+  const normalized = path.endsWith('/') && path !== '/' ? path.slice(0, -1) : path;
+  return normalized || '/';
+};
 
 export default function App() {
-  const isAdminRoute = window.location.pathname.startsWith('/admin');
+  const pathname = normalizePath(window.location.pathname);
+  const adminPath = normalizePath(ADMIN_PATH);
+
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return <LegacyAdminRedirect targetPath={adminPath} />;
+  }
+
+  const isAdminRoute = pathname === adminPath || pathname.startsWith(`${adminPath}/`);
 
   return isAdminRoute ? <AdminApp /> : <StorefrontApp />;
 }
 
-function AdminApp() {
-  const isAdminRoute = window.location.pathname.startsWith('/admin');
-  const storedUser = authStore.getUser();
-  const [adminUser, setAdminUser] = useState(storedUser?.role === 'admin' ? storedUser : null);
-
-  if (isAdminRoute) {
-    if (!adminUser) {
-      return <AdminLogin onSuccess={setAdminUser} />;
-    }
-
-    return <AdminDashboard adminUser={adminUser} onLogout={() => setAdminUser(null)} />;
-  }
+function LegacyAdminRedirect({ targetPath }) {
+  useEffect(() => {
+    window.location.replace(targetPath);
+  }, [targetPath]);
 
   return null;
 }
 
+function AdminApp() {
+  const storedUser = authStore.getUser();
+  const [adminUser, setAdminUser] = useState(storedUser?.role === 'admin' ? storedUser : null);
+
+  const fallback = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <div style={{ width: 48, height: 48, border: '3px solid #C9A97A', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+    </div>
+  );
+
+  if (!adminUser) {
+    return <Suspense fallback={fallback}><AdminLogin onSuccess={setAdminUser} /></Suspense>;
+  }
+
+  return <Suspense fallback={fallback}><AdminDashboard adminUser={adminUser} onLogout={() => setAdminUser(null)} /></Suspense>;
+}
+
 function StorefrontApp() {
 
-  const [user, setUser] = useState(authStore.getUser()); // { name, email }
+  const [user, setUser] = useState(authStore.getUser());
+  const { toasts, toast } = useToast();
   const [authOpen, setAuthOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('pwa_selectedCategory')) || null; } catch { return null; }
@@ -56,6 +87,7 @@ function StorefrontApp() {
   
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [invoiceOrderId, setInvoiceOrderId] = useState(null);
 
   const [sourceSection, setSourceSection] = useState(null);
   const shopCatRef = useRef(null);
@@ -196,8 +228,20 @@ function StorefrontApp() {
       return <AuthPage onClose={() => setAuthOpen(false)} onAuthSuccess={handleAuthSuccess} />;
     }
 
+    if (invoiceOrderId) {
+      return (
+        <InvoicePage
+          orderId={invoiceOrderId}
+          onBack={() => {
+            setInvoiceOrderId(null);
+            setShowProfile(true);
+          }}
+        />
+      );
+    }
+
     if (showProfile && user) {
-      return <ProfilePage user={user} onLogout={handleLogout} onBack={handleBack} />;
+      return <ProfilePage user={user} onLogout={handleLogout} onBack={handleBack} onViewInvoice={(id) => { setInvoiceOrderId(id); setShowProfile(false); }} />;
     }
 
     if (activeStaticPage) {
@@ -251,6 +295,9 @@ function StorefrontApp() {
 
   return (
     <div className="app">
+      {/* Skip-to-main for keyboard/screen reader users */}
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+
       {!authOpen && (
         <Header 
           user={user}
@@ -264,7 +311,17 @@ function StorefrontApp() {
         />
       )}
 
-      {renderContent()}
+      <Suspense
+        fallback={
+          <main id="main-content" style={{ paddingTop: 80, minHeight: '60vh' }}>
+            <SkeletonProductGrid count={8} />
+          </main>
+        }
+      >
+        <main id="main-content">
+          {renderContent()}
+        </main>
+      </Suspense>
 
       {!authOpen && !showProfile && !activeStaticPage && <Footer onNavClick={handleNavClick} />}
 
@@ -281,6 +338,9 @@ function StorefrontApp() {
           onAuthRequest={() => setAuthOpen(true)}
         />
       )}
+
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onClose={toast.dismiss} />
     </div>
   );
 }

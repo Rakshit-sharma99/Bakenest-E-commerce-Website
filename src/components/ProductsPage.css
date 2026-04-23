@@ -233,8 +233,9 @@
 /* ── Grid ── */
 .productsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 28px;
+  /* Fluid: auto-fill columns, min 240px, max 1fr — no breakpoints needed */
+  grid-template-columns: repeat(auto-fill, minmax(clamp(200px, 28vw, 290px), 1fr));
+  gap: 24px;
 }
 
 /* ── Empty state (re-added) ── */
@@ -271,15 +272,19 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: cardFadeIn 0.5s ease both;
+  /* GPU-accelerated: use transform + box-shadow, not layout properties */
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.28s ease,
+              border-color 0.28s ease,
+              background 0.28s ease;
   box-shadow: 0 4px 12px rgba(120, 70, 20, 0.05);
+  will-change: transform;
 }
 
 .productCard:hover {
-  transform: translateY(-8px);
+  transform: translateY(-8px) scale(1.01);
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 20px 40px rgba(120, 70, 20, 0.12);
+  box-shadow: 0 20px 40px rgba(120, 70, 20, 0.14);
   border-color: rgba(201, 149, 106, 0.35);
 }
 
@@ -313,23 +318,26 @@
 
 .wishlistBtn {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 38px;
-  height: 38px;
+  top: 12px;
+  right: 12px;
+  /* 44×44px minimum touch target */
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(4px);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: 0.2s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: transform 0.18s ease, background 0.18s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-.wishlistBtn:hover { transform: scale(1.1); background: white; }
+.wishlistBtn:hover { transform: scale(1.12); background: white; }
+.wishlistBtn:active { transform: scale(0.95); }
 
 .productBody { padding: 22px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
 .productName { font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: #2E1C0E; }
@@ -367,26 +375,57 @@
 .addToCartBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(175, 95, 20, 0.3); }
 .addToCartBtn.added { background: #5C9E6E; box-shadow: 0 4px 15px rgba(92, 158, 110, 0.25); }
 
-/* ════════════════════
-   RESPONSIVE
-   ════════════════════ */
+/* ════════════════════════════════════════
+   RESPONSIVE — Mobile First
+   ════════════════════════════════════════ */
 
+/* Tablet — 1024px */
 @media (max-width: 1024px) {
-  .productsTopBarInner, .productsFilterBanner, .productsHeader, .productsGridWrap { padding-inline: 24px; }
-  .filterScrollContainer { padding: 0; }
+  .productsTopBarInner,
+  .productsHeader,
+  .productsGridWrap { padding-inline: 24px; }
+  .filterScrollContainer { padding: 0 24px; }
 }
 
+/* Phablet / landscape phone — 768px */
 @media (max-width: 768px) {
-  .productsTopBarInner { flex-direction: column; align-items: flex-start; }
+  .productsTopBarInner { flex-direction: column; align-items: flex-start; gap: 10px; }
   .productsControls { width: 100%; justify-content: space-between; }
-  .productsSearchInput { width: 100%; }
-  .productsGrid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .productsTopBarInner, .productsHeader, .productsGridWrap { padding-inline: 16px; }
-  .productCard { border-radius: 20px; }
+  .productsSearchInput { width: 120px; }
+  /* Scroll-snap on mobile for tactile filter bar feel */
+  .filterScrollContainer {
+    padding: 0 16px;
+    scroll-snap-type: x mandatory;
+    gap: 8px;
+  }
+  .filterTab {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+  .productsTopBarInner,
+  .productsHeader,
+  .productsGridWrap { padding-inline: 16px; }
+  .productCard { border-radius: 18px; }
   .productImgWrap { height: 180px; }
 }
 
+/* Small phone — 480px: force 2-col */
 @media (max-width: 480px) {
-  .productsGrid { grid-template-columns: 1fr; }
-  .filterTab { padding: 8px 16px; font-size: 12px; }
+  .productsGrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .productImgWrap { height: 150px; }
+  .productBody { padding: 14px; gap: 7px; }
+  .productName { font-size: 14px; }
+  .productPrice { font-size: 17px; }
+  .addToCartBtn { padding: 8px 14px; font-size: 12px; }
+  .filterTab { padding: 8px 14px; font-size: 12px; }
+  .productsTitle { font-size: 22px; }
 }
+
+/* Very small — 360px: single column */
+@media (max-width: 360px) {
+  .productsGrid { grid-template-columns: 1fr; }
+  .productsTopBarInner,
+  .productsHeader,
+  .productsGridWrap { padding-inline: 12px; }
+}
+

@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import './ShopByCategory.css';
 import { SHOP_CATEGORIES } from '../constants/categories';
+import { api } from '../services/api';
 
 const ShopByCategory = forwardRef(({ onSelect }, ref) => {
   const [hovered, setHovered] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [categoryStats, setCategoryStats] = useState({});
   const inputRef = useRef(null);
   const formRef = useRef(null);
 
@@ -54,6 +56,13 @@ const ShopByCategory = forwardRef(({ onSelect }, ref) => {
     onSelect({ id: cat.id, label: cat.label });
     setShowSuggestions(false);
   };
+
+  // Fetch Category Stats
+  useEffect(() => {
+    api.request('/products/stats/categories')
+      .then(setCategoryStats)
+      .catch(err => console.error('Failed to load category stats:', err));
+  }, []);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -142,7 +151,7 @@ const ShopByCategory = forwardRef(({ onSelect }, ref) => {
               <h3 className="shopCatName">{cat.label}</h3>
               <p className="shopCatTagline">{cat.tagline}</p>
               <span className="shopCatCount" style={{ color: cat.accent }}>
-                {cat.count} items
+                {categoryStats[cat.id] || 0} items
               </span>
             </div>
 

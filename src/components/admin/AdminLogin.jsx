@@ -31,17 +31,6 @@ export default function AdminLogin({ onSuccess }) {
     }
   };
 
-  const openPreviewMode = () => {
-    const previewUser = {
-      name: 'Admin Preview',
-      email: 'preview@bakenest.local',
-      role: 'admin',
-    };
-
-    authStore.savePreviewSession(previewUser);
-    onSuccess(previewUser);
-  };
-
   return (
     <div className="adminAuthWrap">
       <form className="adminAuthCard" onSubmit={handleSubmit}>
@@ -72,10 +61,6 @@ export default function AdminLogin({ onSuccess }) {
 
         <button type="submit" disabled={loading}>
           {loading ? 'Authenticating...' : 'Enter Dashboard'}
-        </button>
-
-        <button type="button" className="previewBtn" onClick={openPreviewMode}>
-          Open Dashboard (Preview Mode)
         </button>
       </form>
     </div>

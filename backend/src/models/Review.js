@@ -35,6 +35,11 @@ const reviewSchema = new mongoose.Schema(
 
 // Prevent users from submitting more than one review per product
 reviewSchema.index({ product: 1, user: 1 }, { unique: true });
+// Per-product review listing sorted by newest (most common read pattern)
+reviewSchema.index({ product: 1, createdAt: -1 });
+// Sort reviews by rating for "Most Helpful" sort
+reviewSchema.index({ product: 1, rating: -1 });
+
 
 // Static method to calculate and update average ratings
 reviewSchema.statics.calcAverageRatings = async function (productId) {

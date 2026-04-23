@@ -458,18 +458,6 @@ td {
   font-weight: 700;
 }
 
-/* ── Preview banner ── */
-.adminPreviewBanner {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(201, 130, 74, 0.1));
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  border-radius: 10px;
-  padding: 12px 20px;
-  font-size: 13.5px;
-  color: #92400e;
-  font-weight: 500;
-  margin-bottom: 24px;
-}
-
 /* ── Toast enhancements ── */
 .adminToast {
   position: fixed;

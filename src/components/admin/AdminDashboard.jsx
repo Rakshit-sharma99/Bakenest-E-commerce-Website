@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api, authStore } from '../../services/api';
 import { getSocket } from '../../services/socket';
+import InvoicePage from '../InvoicePage';
 import './AdminDashboard.css';
 
 const tabs = [
@@ -32,6 +33,7 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [coupons, setCoupons] = useState([]);
+  const [invoiceOrderId, setInvoiceOrderId] = useState(null);
 
   const [productSearch, setProductSearch] = useState('');
   const [orderSearch, setOrderSearch] = useState('');
@@ -53,7 +55,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const isPreviewMode = localStorage.getItem('bakenest_preview_mode') === 'true';
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category))).filter(Boolean),
@@ -71,15 +72,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   };
 
   const loadAll = async () => {
-    if (isPreviewMode) {
-      const productData = await api.request(`/products?limit=100&search=${encodeURIComponent(productSearch)}`);
-      setProducts(productData.items || []);
-      setOrders([]);
-      setUsers([]);
-      setCoupons([]);
-      return;
-    }
-
     const [productData, orderData, userData, couponData] = await Promise.all([
       api.request(`/products?limit=100&search=${encodeURIComponent(productSearch)}`),
       api.request(`/orders?status=${orderStatusFilter}&search=${encodeURIComponent(orderSearch)}`),
@@ -99,8 +91,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   }, [productSearch, orderSearch, orderStatusFilter]);
 
   useEffect(() => {
-    if (isPreviewMode) return undefined;
-
     const socket = getSocket();
 
     const handleRealtime = () => {
@@ -116,7 +106,7 @@ export default function AdminDashboard({ adminUser, onLogout }) {
       socket.off('orders:changed', handleRealtime);
       socket.off('coupons:changed', handleRealtime);
     };
-  }, [productSearch, orderSearch, orderStatusFilter, isPreviewMode]);
+  }, [productSearch, orderSearch, orderStatusFilter]);
 
   const resetProductForm = () => {
     setProductForm(defaultProduct);
@@ -125,11 +115,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
   const submitProduct = async (event) => {
     event.preventDefault();
-    if (isPreviewMode) {
-      showToast('Preview mode: editing is disabled. Login to enable changes.', true);
-      return;
-    }
-
     setSavingProduct(true);
     try {
       // Pre-process images back into an array before sending
@@ -183,11 +168,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   };
 
   const removeProduct = async (id) => {
-    if (isPreviewMode) {
-      showToast('Preview mode: deleting is disabled. Login to enable changes.', true);
-      return;
-    }
-
     if (!window.confirm('Delete this product?')) return;
 
     try {
@@ -200,11 +180,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   };
 
   const uploadProductImage = async (file) => {
-    if (isPreviewMode) {
-      showToast('Preview mode: image upload is disabled. Login to enable changes.', true);
-      return;
-    }
-
     try {
       const payload = await api.uploadImage(file);
       setProductForm((prev) => ({ ...prev, imageUrl: payload.imageUrl }));
@@ -216,11 +191,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
   const createCoupon = async (event) => {
     event.preventDefault();
-    if (isPreviewMode) {
-      showToast('Preview mode: coupon creation is disabled. Login to enable changes.', true);
-      return;
-    }
-
     try {
       await api.request('/coupons', {
         method: 'POST',
@@ -243,11 +213,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   };
 
   const toggleCoupon = async (id) => {
-    if (isPreviewMode) {
-      showToast('Preview mode: coupon updates are disabled. Login to enable changes.', true);
-      return;
-    }
-
     try {
       await api.request(`/coupons/${id}/toggle`, { method: 'PATCH' });
       showToast('Coupon status updated');
@@ -258,11 +223,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   };
 
   const updateOrderStatus = async (id, status) => {
-    if (isPreviewMode) {
-      showToast('Preview mode: order updates are disabled. Login to enable changes.', true);
-      return;
-    }
-
     try {
       await api.request(`/orders/${id}/status`, {
         method: 'PATCH',
@@ -288,6 +248,16 @@ export default function AdminDashboard({ adminUser, onLogout }) {
 
   return (
     <div className="adminShell">
+      {/* Admin invoice viewer overlay */}
+      {invoiceOrderId && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto' }}>
+          <InvoicePage
+            orderId={invoiceOrderId}
+            isAdmin={true}
+            onBack={() => setInvoiceOrderId(null)}
+          />
+        </div>
+      )}
       <aside className="adminSidebar">
         <h2>BakeNest Admin</h2>
         <p>Welcome, {adminUser.name}</p>
@@ -308,12 +278,6 @@ export default function AdminDashboard({ adminUser, onLogout }) {
       </aside>
 
       <main className="adminContent">
-        {isPreviewMode && (
-          <div className="adminPreviewBanner">
-            Preview mode is active. You can browse the dashboard UI now. Login later to manage products, orders, users, and discounts.
-          </div>
-        )}
-
         {(message || error) && (
           <div className={`adminToast ${error ? 'error' : ''}`}>{error || message}</div>
         )}
@@ -481,6 +445,12 @@ export default function AdminDashboard({ adminUser, onLogout }) {
                         <button onClick={() => updateOrderStatus(order._id, 'processing')}>Processing</button>
                         <button onClick={() => updateOrderStatus(order._id, 'shipped')}>Shipped</button>
                         <button onClick={() => updateOrderStatus(order._id, 'delivered')}>Delivered</button>
+                        <button
+                          style={{ background: 'linear-gradient(135deg,#302b63,#24243e)', color: '#fff', border: 'none' }}
+                          onClick={() => setInvoiceOrderId(order._id)}
+                        >
+                          🧾 Invoice
+                        </button>
                       </td>
                     </tr>
                   ))}

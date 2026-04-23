@@ -42,4 +42,10 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ── Performance Indexes ───────────────────────────────────────────────────
+// User's order history (most frequent query)
+orderSchema.index({ user: 1, createdAt: -1 });
+// Admin order management: filter by status + sort by date
+orderSchema.index({ status: 1, createdAt: -1 });
+
 export default mongoose.model('Order', orderSchema);

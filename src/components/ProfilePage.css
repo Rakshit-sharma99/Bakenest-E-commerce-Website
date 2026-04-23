@@ -497,3 +497,24 @@
 .orderAddressBlock h4 { font-size: 13px; font-weight: 700; color: #7a5c42; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
 .orderAddressBlock address { font-style: normal; font-size: 13.5px; color: #4a3424; line-height: 1.7; }
 
+/* ── View Invoice Button ── */
+.invViewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #302b63, #24243e);
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(48, 43, 99, 0.35);
+  transition: opacity 0.2s, transform 0.15s;
+}
+.invViewBtn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
