@@ -194,26 +194,16 @@ export default function ProductsPage({ category, onBack, onAddToCart, onProductC
         </div>
       </div>
 
-      {/* ── Category Quick Filter (Combined from ShopByCategory) ── */}
+      {/* ── Category Quick Filter ── */}
       <div className="productsFilterBanner">
         <div className="filterScrollContainer">
           <button 
-            className={`filterTab ${activeCatId === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveCatId('all')}
+            className="filterTab active"
+            style={{ cursor: 'default' }}
           >
             <span className="filterTabIcon">📦</span>
             All Products
           </button>
-          {SHOP_CATEGORIES.map(cat => (
-            <button 
-              key={cat.id} 
-              className={`filterTab ${activeCatId === cat.id ? 'active' : ''}`}
-              onClick={() => setActiveCatId(cat.id)}
-            >
-              <span className="filterTabIcon">{cat.icon}</span>
-              {cat.label}
-            </button>
-          ))}
         </div>
       </div>
 
