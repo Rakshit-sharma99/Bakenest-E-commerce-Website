@@ -44,8 +44,8 @@ io.on('connection', (socket) => {
 initSocket(io);
 
 // Start the server and listen for incoming requests on the specified port
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   // Log a message to the console indicating that the backend is successfully running
-  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log(`Backend running on port ${PORT}`);
 });
 
