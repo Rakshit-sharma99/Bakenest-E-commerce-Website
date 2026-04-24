@@ -49,15 +49,6 @@ VITE_API_URL=http://localhost:5000/api
 
 Create `backend/.env` from `backend/.env.example`:
 
-```env
-PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/bakenest
-JWT_SECRET=replace-with-strong-random-secret
-JWT_EXPIRES_IN=1d
-CLIENT_URL=http://localhost:5173
-ADMIN_EMAIL=admin@bakenest.com
-ADMIN_PASSWORD=StrongAdmin@123
-```
 
 ## Install dependencies
 
